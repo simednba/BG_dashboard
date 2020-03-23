@@ -76,17 +76,22 @@ def render_char_graph(char):
                                      t = 'bar',
                                      fig_title = f'gain total/moyen de mmr = {df_stats.loc[char]["gain mmr"]}/{df_stats.loc[char]["mmr moyen par partie"]}')),                                                       
                 dbc.Col(render_graph(x=df_top.columns[1:-1],
-                                     y=[round(x) for x in df_top.loc[char].values[1:-1]*df_stats.loc[char]['nombre de pick(nouveau)']],
+                                     y=[round(x) for x in df_top.loc[char].values[1:-1]*df_stats.loc[char]['nombre de pick']],
                                      titre='Placements',
                                      fig_title = f'placement moyen/winrate = {df_stats.loc[char]["position moyenne"]}/{float(df_all.loc[char]["winrate"])*100}%'))
                 
           ]         
         ), dbc.Row([
-                dbc.Col(render_graph(x=['proposé','pick'],
-                                     y=[[df_stats.loc[char]['nombre de fois proposé(nouveau)'],df_stats.loc[char]['nombre de pick(nouveau)']],[df_stats.loc[char]['nombre de fois proposé (total)'],df_stats.loc[char]['nombre de pick (total)']]],
-                                     titre='Picks',
-                                     t = '2bar',
-                                     fig_title = '<br>'.join([f'nouveau : proposé/pickrate de : {int(float(df_stats.loc[char]["% proposé(nouveau)"])*100)}%/{int(float(df_stats.loc[char]["pickrate(nouveau)"])*100)}%,',f' ancien : proposé/pickrate de : {int(float(df_stats.loc[char]["% proposé(total)"])*100)}%/{int(float(df_stats.loc[char]["pickrate(total)"])*100)}%']))),                                                       
+                dbc.Col(dcc.Markdown(f'''
+                                     ### Stats générales
+                                     - **Nombre de Parties** : {df_all.loc[char]['nombre de pick']}
+                                     - **Winrate** : {df_all.loc[char]['winrate']}
+                                     - **Position moyenne** : {df_all.loc[char]['position moyenne']}
+                                     - **Proposé dans % de parties** : {df_all.loc[char]['% proposé']}
+                                     - **Pickrate** : {df_all.loc[char]['pickrate']}
+                                     - **Gain moyen de MMR** : {df_all.loc[char]['mmr moyen par partie']}
+                                     - **Gain total de MMR** : {df_all.loc[char]['gain mmr']}
+                                     ''', className = 'md')),                                                       
                 dbc.Col([html.H2('Dernieres parties'),df2table_simple(all_matches[char])]),
                 
                     ])])
@@ -97,16 +102,17 @@ def render_char_graph(char):
     
 def render_graph(x, y , titre, t='pie', fig_title = '' ):
     if t =='pie':
-        return html.Div([
+        return html.Div(style = {'height' : '50vh'},children=[
                         html.H2(titre),
                         dcc.Graph(figure = go.Figure(data=[go.Pie(labels= x , values= y ,textinfo='label+percent+value')],
-                                                     layout = go.Layout(title = go.layout.Title(text=fig_title))))
+                                                     layout = go.Layout(title = go.layout.Title(text=fig_title))), 
+                                  style = {'height' : 'inherit'})
                         
                             ])
     elif t =='bar':
-        return html.Div([
+        return html.Div(style = {'height' : '50vh'},children=[
             html.H2(titre),
-            dcc.Graph(figure= go.Figure(data=[go.Bar(x=x, y=y, text=y, textposition = 'auto')],
+            dcc.Graph(style = {'height' : 'inherit'},figure= go.Figure(data=[go.Bar(x=x, y=y, text=y, textposition = 'auto')],
                                         layout = go.Layout(title = go.layout.Title(text=fig_title))))])
     elif t =='2bar':
         return html.Div([
