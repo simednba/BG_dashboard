@@ -15,6 +15,7 @@ import pandas as pd
 import plotly.graph_objs as go
 from bg_logs_reader import get_all_stats
 import dash_table
+import numpy as np
 
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.BOOTSTRAP])
 server = app.server
@@ -34,12 +35,12 @@ app.layout = html.Div(children=[dcc.Tabs(id='main',value='main_v',children = [
 ])
 
 graphs_generals = {'MMR' : 'mmr',
-                   'Top picks(nombre)' : 'nombre de fois pick',
+                   'Top picks(nombre)' : 'nombre de pick',
                    'Top pickrate' : 'pickrate',
                    'Top propose(nombre)' : 'nombre de fois proposé',
                    'Top gain MMR(absolu)' : 'mmr total gagné',
                    'Top perte MMR' : 'mmr total perdu',
-                   'Top gain MMR(relatif)' : 'gain_mmr',
+                   'Top gain MMR(relatif)' : 'gain mmr',
                    'Top Winrate' : 'winrate',
                    'Top placement moyen' : 'position moyenne',
                    'Top top 1 rate' : '% top 1',
@@ -56,7 +57,8 @@ def render_content(tab):
             [
                 dbc.Col(
                     html.Div([html.H2('Type de graphe'),
-                              dcc.Dropdown(id = 't_1', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()])])
+                              dcc.Dropdown(id = 't_1', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()]),
+                              dcc.Input(id='n_max', type="number",value = 5)])
                     ,width=6,
                     style={"height": "100px"},
                 ),
@@ -105,24 +107,82 @@ def render_content(tab):
 
 @app.callback(Output('g1', 'children'),
               [Input('t_1', 'value'),
+               Input('n_max','value'),
                ])
-def render_general_page1(t_1):
+def render_general_page1(t_1, n_max):
     if t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
                     figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin' : {'t' : 10}}))
-                
-            
-       
+    elif t_1 =='Top top 1(absolu)':
+        results = {}
+        for champ in df_stats['nom']:
+            if not np.isnan(df_all.loc[champ]['nombre de pick'])  and not np.isnan(df_all.loc[champ]['% top 1']):
+                results[champ] = round(df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['% top 1']/100)
+               
+        sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
+        x = list(sort_res.keys())[:n_max]
+        y = list(sort_res.values())[:n_max]
+        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Top 1'))
+    elif t_1 =='Top victoire(absolu)':
+        results = {}
+        for champ in df_stats['nom']:
+            if not np.isnan(df_all.loc[champ]['nombre de pick'])  and not np.isnan(df_all.loc[champ]['winrate']):
+                results[champ] = round(df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['winrate']/100)
+               
+        sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
+        x = list(sort_res.keys())[:n_max]
+        y = list(sort_res.values())[:n_max]
+        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Victoires'))
+    else:
+        key = graphs_generals[t_1]
+        results = {}
+        for champ in df_stats['nom']:
+            if not np.isnan(df_all.loc[champ][key]):
+                results[champ] = df_all.loc[champ][key]      
+        sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True if key not in ['position moyenne'] else False)}
+        x = list(sort_res.keys())[:n_max]
+        y = list(sort_res.values())[:n_max]
+        return html.Div(render_graph(x, y, t='bar', titre=t_1))
+
 @app.callback(Output('g2', 'children'),
-              [Input('t_2', 'value')])
-def render_general_page2(t_2):
-    print(t_2)
-    if t_2 =='MMR':
+              [Input('t_2', 'value'),
+               Input('n_max','value')])
+def render_general_page2(t_1,n_max):
+    if t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
                     figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin' : {'t' : 10}}))
-    
+    elif t_1 =='Top top 1(absolu)':
+        results = {}
+        for champ in df_stats['nom']:
+            if not np.isnan(df_all.loc[champ]['nombre de pick'])  and not np.isnan(df_all.loc[champ]['% top 1']):
+                results[champ] = round(df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['% top 1']/100)
+               
+        sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
+        x = list(sort_res.keys())[:n_max]
+        y = list(sort_res.values())[:n_max]
+        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Top 1'))
+    elif t_1 =='Top victoire(absolu)':
+        results = {}
+        for champ in df_stats['nom']:
+            if not np.isnan(df_all.loc[champ]['nombre de pick'])  and not np.isnan(df_all.loc[champ]['winrate']):
+                results[champ] = round(df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['winrate']/100)
+               
+        sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
+        x = list(sort_res.keys())[:n_max]
+        y = list(sort_res.values())[:n_max]
+        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Victoires'))
+    else:
+        key = graphs_generals[t_1]
+        results = {}
+        for champ in df_stats['nom']:
+            if not np.isnan(df_all.loc[champ][key]):
+                results[champ] = df_all.loc[champ][key]      
+        sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True if key not in ['position moyenne'] else False)}
+        x = list(sort_res.keys())[:n_max]
+        y = list(sort_res.values())[:n_max]
+        return html.Div(render_graph(x, y, t='bar', titre=t_1))    
 @app.callback(Output('graph_char', 'children'),
               [Input('choix_perso', 'value')])
 def render_char_graph(char):
