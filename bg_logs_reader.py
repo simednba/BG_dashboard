@@ -287,28 +287,18 @@ def get_all_stats():
                          mmr_data[hero][1],nb_played[hero],
                          nb_proposed_new[hero],round(pickrate_new[hero],2),
                          round_(tot_pickrate_n[hero],2),
-                         round_(percent_proposed_new[hero],2),
-                         nb_played_all[hero],
-                         nb_proposed_all[hero], 
-                         round_(pickrate_all[hero],2), 
-                         round_(tot_pickrate_all[hero],2),
-                         round_(percent_proposed_old[hero],2)
+                         round_(percent_proposed_new[hero],2)
                          ]
     df = pd.DataFrame.from_dict(results, orient = 'index', columns = ['nom','position moyenne',
                                                                       'mmr moyen par partie',
                                                                       'mmr total gagné',
                                                                       'mmr total perdu',
                                                                       'gain mmr',
-                                                                      'nombre de pick(nouveau)',
-                                                                      'nombre de fois proposé(nouveau)',
-                                                                      'pickrate(nouveau)',
-                                                                      '% de parties(nouveau)',
-                                                                      '% proposé(nouveau)',
-                                                                      'nombre de pick (total)',
-                                                                      'nombre de fois proposé (total)',
-                                                                      'pickrate(total)',
-                                                                      '% de parties(total)',
-                                                                      '% proposé(total)'
+                                                                      'nombre de pick',
+                                                                      'nombre de fois proposé',
+                                                                      'pickrate',
+                                                                      '% de parties',
+                                                                      '% proposé'
                                                                       ])
     top_n_temp =defaultdict(list)
     for hero, data_hero in top_n.items():
