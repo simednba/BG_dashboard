@@ -176,7 +176,7 @@ def get_mmr_gain(data):
     results = defaultdict(list)
     for index_match,result_match in enumerate(data):
         if index_match == 0:
-            continue
+            results[result_match['hero']].append(0)
         results[result_match['hero']].append(int(result_match['mmr']) - int(data[index_match-1]['mmr']))
     return {k.replace('"',''): (np.mean(v), sum(v), -sum([i for i in v if i<0]), sum([i for i in v if i>0])) for k,v in results.items()}
 
@@ -238,7 +238,7 @@ def get_all_stats():
         tot_pickrate_all_temp[hero] += nb
     total_matches = total_new + sum([a[1] for a in p_old.values()])
     tot_pickrate_all = {k: v/total_matches for k,v in tot_pickrate_all_temp.items()}# total pickrate csv+old
-    pickrate_new = {k : v[1]/v[0] for k,v in p_new.items()} # pickrate new ( but not csv)
+    pickrate_new = {k : nb_played[k]/v[0] for k,v in p_new.items() if k in nb_played } # pickrate new ( but not csv)
     p_all = {}
     for hero, data in p_old.items():
         if hero not in p_all:
