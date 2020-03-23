@@ -35,6 +35,7 @@ app.layout = html.Div(children=[dcc.Tabs(id='main',value='main_v',children = [
 ])
 
 graphs_generals = {'MMR' : 'mmr',
+                   'Placements' : 'p',
                    'Top picks(nombre)' : 'nombre de pick',
                    'Top pickrate' : 'pickrate',
                    'Top propose(nombre)' : 'nombre de fois proposé',
@@ -45,7 +46,8 @@ graphs_generals = {'MMR' : 'mmr',
                    'Top placement moyen' : 'position moyenne',
                    'Top top 1 rate' : '% top 1',
                    'Top victoire(absolu)' :'v_abs',
-                   'Top top 1(absolu)' : '1_abs'}
+                   'Top top 1(absolu)' : '1_abs',
+                   }
 
 @app.callback(Output('content', 'children'),
               [Input('main', 'value')])
@@ -119,7 +121,6 @@ def render_general_page1(t_1, n_max):
         for champ in df_stats['nom']:
             if not np.isnan(df_all.loc[champ]['nombre de pick'])  and not np.isnan(df_all.loc[champ]['% top 1']):
                 results[champ] = round(df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['% top 1']/100)
-               
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
@@ -134,6 +135,11 @@ def render_general_page1(t_1, n_max):
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
         return html.Div(render_graph(x, y, t='bar', titre='Nombres de Victoires'))
+    elif t_1 =='Placements':
+        nb_parties = sum([x for x in df_all['nombre de pick'].values if not np.isnan(x)])
+        x=df_top.columns[1:-1]
+        y=[round(x) for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+        return html.Div(render_graph(x,y,titre = 'Placements', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}'))
     else:
         key = graphs_generals[t_1]
         results = {}
@@ -173,6 +179,12 @@ def render_general_page2(t_1,n_max):
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
         return html.Div(render_graph(x, y, t='bar', titre='Nombres de Victoires'))
+    elif t_1 =='Placements':
+        nb_parties = sum([x for x in df_all['nombre de pick'].values if not np.isnan(x)])
+        x=df_top.columns[1:-1]
+        y=[round(x) for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+        return html.Div(render_graph(x,y,titre = 'Placements', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}'))
+    
     else:
         key = graphs_generals[t_1]
         results = {}
@@ -195,12 +207,10 @@ def render_char_graph(char):
                 dbc.Col(render_graph(x=['mmr gagné', 'mmr perdu'],
                                      y=[df_stats.loc[char]['mmr total gagné'],df_stats.loc[char]['mmr total perdu']],
                                      titre='MMR',
-                                     t = 'bar',
-                                     fig_title = f'gain total/moyen de mmr = {df_stats.loc[char]["gain mmr"]}/{df_stats.loc[char]["mmr moyen par partie"]}')),                                                       
+                                     t = 'bar')),                                                       
                 dbc.Col(render_graph(x=df_top.columns[1:-1],
                                      y=[round(x) for x in df_top.loc[char].values[1:-1]*df_stats.loc[char]['nombre de pick']],
-                                     titre='Placements',
-                                     fig_title = f'placement moyen/winrate = {df_stats.loc[char]["position moyenne"]}/{float(df_all.loc[char]["winrate"])*100}%'))
+                                     titre='Placements'))
                 
           ]         
         ), dbc.Row([
