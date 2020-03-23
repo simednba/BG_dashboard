@@ -285,9 +285,9 @@ def get_all_stats():
                          round_(mmr_data[hero][0],0),
                          mmr_data[hero][3],mmr_data[hero][2],
                          mmr_data[hero][1],nb_played[hero],
-                         nb_proposed_new[hero],round(pickrate_new[hero],2),
-                         round_(tot_pickrate_n[hero],2),
-                         round_(percent_proposed_new[hero],2)
+                         nb_proposed_new[hero],round_(pickrate_new[hero]*100,1),
+                         round_(tot_pickrate_n[hero]*100,1),
+                         round_(percent_proposed_new[hero]*100,1)
                          ]
     df = pd.DataFrame.from_dict(results, orient = 'index', columns = ['nom','position moyenne',
                                                                       'mmr moyen par partie',
@@ -304,7 +304,7 @@ def get_all_stats():
     for hero, data_hero in top_n.items():
         hero = hero.replace('"','')
         for place in range(1,9):
-            top_n_temp[hero].append(data_hero[place])
+            top_n_temp[hero].append(round_(data_hero[place]*100,1))
         top_n_temp[hero].append(sum(top_n_temp[hero][:4]))
         top_n_temp[hero].insert(0, hero.replace('"',''))
     df_top_n = pd.DataFrame.from_dict(top_n_temp, orient = 'index', columns = ['nom']+[f'% top {i}' for i in range(1,9)]+['winrate'])
