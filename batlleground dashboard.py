@@ -33,18 +33,63 @@ app.layout = html.Div(children=[dcc.Tabs(id='main',value='main_v',children = [
 
 ])
 
+graphs_generals = {'MMR' : 'mmr',
+                   'Top picks(nombre)' : 'nombre de fois pick',
+                   'Top pickrate' : 'pickrate',
+                   'Top propose(nombre)' : 'nombre de fois proposé',
+                   'Top gain MMR(absolu)' : 'mmr total gagné',
+                   'Top perte MMR' : 'mmr total perdu',
+                   'Top gain MMR(relatif)' : 'gain_mmr',
+                   'Top Winrate' : 'winrate',
+                   'Top placement moyen' : 'position moyenne',
+                   'Top top 1 rate' : '% top 1',
+                   'Top victoire(absolu)' :'v_abs',
+                   'Top top 1(absolu)' : '1_abs'}
+
 @app.callback(Output('content', 'children'),
               [Input('main', 'value')])
 def render_content(tab):
-    if tab == 'global':
-        return html.Div(
-            dcc.Graph(
-                id='example-graph',
-                figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))])
-) 
-                        )
+    if tab =='global':
+       return dbc.Container(
+    [
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div([html.H2('Type de graphe'),
+                              dcc.Dropdown(id = 't_1', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()])])
+                    ,width=6,
+                    style={"height": "100px"},
+                ),
+                dbc.Col(
+                    html.Div([html.H2('Type de graphe'),
+                              dcc.Dropdown(id = 't_2', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()])])
+                    ,
+                    width=6,
+                    style={"height": "100px"},
+                ),
+            ],
+        ),
+        dbc.Row(
+            [
+                dbc.Col(
+                    html.Div(id='g1'),
+                    width=6,
+                    style={"height": "900px"},
+                ),
+                dbc.Col(
+                    html.Div(id='g2'),
+                    width=6,
+                    style={"height": "900px"},
+                ),
+            ]
+            ,
+        ),
+    ],
+    style={"height": "1080px"},
+)
+
     elif tab =='all':
-        return html.Div([
+        return html.Div(children=[
                     dbc.Row([
                             dbc.Col([html.H2('Colonnes a garder'),dcc.Dropdown(id = 'filtre_col',
                                       options = [{'label' : v, 'value':v} for v in df_all.columns], multi = True, value=[v for v in df_all.columns]),
@@ -58,8 +103,26 @@ def render_content(tab):
     options=[{'label' : k, 'value' : k} for k in df_stats['nom'].values]),
             html.Div(id = 'graph_char')])
 
+@app.callback(Output('g1', 'children'),
+              [Input('t_1', 'value'),
+               ])
+def render_general_page1(t_1):
+    if t_1 =='MMR':
+        return dcc.Graph(
+                    id='example-graph',
+                    figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin' : {'t' : 10}}))
+                
+            
+       
+@app.callback(Output('g2', 'children'),
+              [Input('t_2', 'value')])
+def render_general_page2(t_2):
+    print(t_2)
+    if t_2 =='MMR':
+        return dcc.Graph(
+                    id='example-graph',
+                    figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin' : {'t' : 10}}))
     
-
 @app.callback(Output('graph_char', 'children'),
               [Input('choix_perso', 'value')])
 def render_char_graph(char):
