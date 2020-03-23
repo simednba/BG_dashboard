@@ -49,11 +49,10 @@ def render_content(tab):
                             dbc.Col([html.H2('Colonnes a garder'),dcc.Dropdown(id = 'filtre_col',
                                       options = [{'label' : v, 'value':v} for v in df_all.columns], multi = True, value=[v for v in df_all.columns]),
                                      html.H2('sort by'),dcc.Dropdown(id = 'sort',
-                                      options = [{'label' : v, 'value':v} for v in df_all.columns])], width = 3),
+                                      options = [{'label' : v, 'value':v} for v in df_all.columns]),
+                                     html.H2('Nombre de pick mini'),
+                                     dcc.Input(id='n_min', type="number",value = 1)], width = 3),
                             dbc.Col(html.Div(id='content_table'), width = 9)])])
-        # return html.Div([dcc.Dropdown(id = 'filtre_col',
-        #                               options = [{'label' : v, 'value':v} for v in df_all.columns]),
-        #                               df2table(df_all)])
     elif tab =='solo':
         return html.Div([dcc.Dropdown(id = 'choix_perso',
     options=[{'label' : k, 'value' : k} for k in df_stats['nom'].values]),
@@ -123,8 +122,10 @@ def render_graph(x, y , titre, t='pie', fig_title = '' ):
         
 @app.callback(Output('content_table', 'children'),
               [Input('filtre_col', 'value'),
-               Input('sort', 'value')])  
-def df2table(filter_columns, sort_by):
+               Input('sort', 'value'),
+               Input('n_min','value')])  
+def df2table(filter_columns, sort_by, n_min):
+    n_min = 0 if not n_min else n_min
     dataframe = df_all
     accepted_rows = list(dataframe['nom'].values)
     accepted_cols = dataframe.columns if not filter_columns else filter_columns
@@ -138,7 +139,7 @@ def df2table(filter_columns, sort_by):
         html.Tbody([
             html.Tr([
                 html.Td(dataframe.iloc[i][col]) for col in dataframe.columns if col in accepted_cols
-            ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows
+            ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows and dataframe.iloc[i]['nombre de pick'] >=n_min
         ])
     ])
 
