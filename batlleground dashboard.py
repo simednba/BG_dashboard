@@ -280,7 +280,7 @@ def df2table(filter_columns, sort_by, n_min):
                 html.Td(dataframe.iloc[i][col]) for col in dataframe.columns if col in accepted_cols
             ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows and dataframe.iloc[i]['nombre de pick'] >=n_min
         ])
-    ])
+    ],className = 'table')
 
 def df2table_simple(dataframe):
     return html.Table([
