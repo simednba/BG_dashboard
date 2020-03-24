@@ -332,7 +332,15 @@ def get_all_matches_per_champ(data):
     return all_dfs        
 
    
-
+def rolling_mean(data, w=3):
+    results = []
+    for index in range(len(data)):
+        if index-w<0:
+            last_match = data[:index+1]
+        else:
+            last_match = data[index-w+1:index+1]
+        results.append(np.mean(last_match))
+    return results
 #%%  
 
 
