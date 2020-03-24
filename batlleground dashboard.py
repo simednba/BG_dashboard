@@ -66,7 +66,8 @@ def render_content(tab):
                 ),
                 dbc.Col(
                     html.Div([html.H2('Type de graphe'),
-                              dcc.Dropdown(id = 't_2', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()])])
+                              dcc.Dropdown(id = 't_2', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()]),
+                              dcc.Input(id='n_min_2', type="number",value = 3)])
                     ,
                     width=6,
                     style={"height": "100px"},
@@ -110,8 +111,9 @@ def render_content(tab):
 @app.callback(Output('g1', 'children'),
               [Input('t_1', 'value'),
                Input('n_max','value'),
+               Input('n_min_2','value'),
                ])
-def render_general_page1(t_1, n_max):
+def render_general_page1(t_1, n_max, n_min):
     if t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
@@ -143,8 +145,11 @@ def render_general_page1(t_1, n_max):
     else:
         key = graphs_generals[t_1]
         results = {}
+        print(key)
+        if key not in ['position moyenne','gain mmr','pickrate', '% top 1','winrate'] or n_min == None:
+            n_min = 0
         for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ][key]):
+            if not np.isnan(df_all.loc[champ][key]) and df_all.loc[champ]['nombre de pick']>=n_min:
                 results[champ] = df_all.loc[champ][key]      
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True if key not in ['position moyenne'] else False)}
         x = list(sort_res.keys())[:n_max]
@@ -153,8 +158,9 @@ def render_general_page1(t_1, n_max):
 
 @app.callback(Output('g2', 'children'),
               [Input('t_2', 'value'),
-               Input('n_max','value')])
-def render_general_page2(t_1,n_max):
+               Input('n_max','value'),
+               Input('n_min_2','value')])
+def render_general_page1(t_1, n_max, n_min):
     if t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
@@ -164,7 +170,6 @@ def render_general_page2(t_1,n_max):
         for champ in df_stats['nom']:
             if not np.isnan(df_all.loc[champ]['nombre de pick'])  and not np.isnan(df_all.loc[champ]['% top 1']):
                 results[champ] = round(df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['% top 1']/100)
-               
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
@@ -188,13 +193,15 @@ def render_general_page2(t_1,n_max):
     else:
         key = graphs_generals[t_1]
         results = {}
+        if key not in ['position moyenne','gain mmr','pickrate', '% top 1','winrate'] or n_min ==None:
+            n_min = 0
         for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ][key]):
+            if not np.isnan(df_all.loc[champ][key]) and df_all.loc[champ]['nombre de pick']>=n_min:
                 results[champ] = df_all.loc[champ][key]      
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True if key not in ['position moyenne'] else False)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
-        return html.Div(render_graph(x, y, t='bar', titre=t_1))    
+        return html.Div(render_graph(x, y, t='bar', titre=t_1))   
 @app.callback(Output('graph_char', 'children'),
               [Input('choix_perso', 'value')])
 def render_char_graph(char):
