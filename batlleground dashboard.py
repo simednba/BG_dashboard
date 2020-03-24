@@ -215,7 +215,7 @@ def render_char_graph(char):
                                      titre='MMR',
                                      t = 'bar')),                                                       
                 dbc.Col(render_graph(x=df_top.columns[1:-1],
-                                     y=[round(x) for x in df_top.loc[char].values[1:-1]*df_stats.loc[char]['nombre de pick']],
+                                     y=[round(x) for x in df_top.loc[char].values[1:-1]*df_stats.loc[char]['nombre de pick']/100],
                                      titre='Placements'))
                 
           ]         
