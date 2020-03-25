@@ -253,8 +253,8 @@ def render_graph(x, y , titre, t='pie', fig_title = '' ):
     elif t =='bar':
         return html.Div(style = {'height' : '50vh'},children=[
             html.H2(titre),
-            dcc.Graph(style = {'height' : 'inherit'},figure= go.Figure(data=[go.Bar(x=x, y=y, text=y, textposition = 'auto')],
-                                        layout = go.Layout(title = go.layout.Title(text=fig_title))))])
+            dcc.Graph(style = {'height' : 'inherit'},figure= go.Figure(data=[go.Bar(x=y, y=x, text=y, textposition = 'auto', orientation = 'h')],
+                                        layout = go.Layout(title = go.layout.Title(text=fig_title),yaxis=dict(autorange="reversed"))))])
     elif t =='2bar':
         return html.Div([
             html.H2(titre),
