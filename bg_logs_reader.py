@@ -326,9 +326,16 @@ def get_all_matches_per_champ(data):
         results[hero].append([match['date'] if len(match['date']) >2 else np.nan,
                               match['pos'],
                               data[index_match-1]['mmr'] if index_match !=0 else data[0]['mmr'],
-                              match['mmr']])
+                              match['mmr'],
+                              int(match['mmr']) - int(data[index_match-1]['mmr']) if index_match !=0 else 0])
+    for hero, hero_data in results.items():
+        for index in range(len(hero_data)):
+            if index ==0:
+                results[hero][index].append(results[hero][0][-1])
+            else:
+                results[hero][index].append(results[hero][index-1][-1]+results[hero][index][-1])
                     
-    all_dfs = {k.replace('"','') : pd.DataFrame(v, columns = ['date','position','mmr avant', 'mmr aprés']) for k,v in results.items()}
+    all_dfs = {k.replace('"','') : pd.DataFrame(v, columns = ['date','position','mmr avant', 'mmr aprés', 'gain mmr', 'gain mmr total']) for k,v in results.items()}
     return all_dfs        
 
    

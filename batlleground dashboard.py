@@ -211,10 +211,10 @@ def render_char_graph(char):
         return html.Div('Pas de parties !')
     layout= html.Div([
             dbc.Row([
-                dbc.Col(render_graph(x=['mmr gagné', 'mmr perdu'],
-                                     y=[df_stats.loc[char]['mmr total gagné'],df_stats.loc[char]['mmr total perdu']],
-                                     titre='MMR',
-                                     t = 'bar')),                                                       
+                dbc.Col(render_graph(x=list(range(len(all_matches[char]))),
+                                     y=all_matches[char]['gain mmr total'].values,
+                                     titre='Gain MMR total selon les matchs',
+                                     t = 'scatter')),                                                       
                 dbc.Col(render_graph(x=df_top.columns[1:-1],
                                      y=[round(x) for x in df_top.loc[char].values[1:-1]*df_stats.loc[char]['nombre de pick']/100],
                                      titre='Placements'))
@@ -229,7 +229,9 @@ def render_char_graph(char):
                                      - **Proposé dans % de parties** : {df_all.loc[char]['% proposé']}
                                      - **Pickrate** : {df_all.loc[char]['pickrate']}
                                      - **Gain moyen de MMR** : {df_all.loc[char]['mmr moyen par partie']}
-                                     - **Gain total de MMR** : {df_all.loc[char]['gain mmr']}
+                                     - **Gain relatif de MMR** : {df_all.loc[char]['gain mmr']}
+                                     - **Gain total de MMR** : {df_all.loc[char]['mmr total gagné']}
+                                     - **Perte total de MMR** : {df_all.loc[char]['mmr total perdu']}
                                      ''', className = 'md')),                                                       
                 dbc.Col([html.H2('Dernieres parties'),df2table_simple(all_matches[char])]),
                 
@@ -259,6 +261,12 @@ def render_graph(x, y , titre, t='pie', fig_title = '' ):
             dcc.Graph(figure= go.Figure(data=[go.Bar(name='nouveau',x=x, y=y[0], text=y[0], textposition = 'auto'),
                                               go.Bar(name='total',x=x, y=y[1], text=y[1], textposition = 'auto')],
                                         layout = go.Layout(title = go.layout.Title(text=fig_title))))])
+    elif t =='scatter':
+        return html.Div([
+            html.H2(titre),
+            dcc.Graph(figure= go.Figure(data=[go.Scatter(x=x, y=y, text=y, textposition = 'top center')],
+                                        layout = go.Layout(title = go.layout.Title(text=fig_title))))])
+
         
 @app.callback(Output('content_table', 'children'),
               [Input('filtre_col', 'value'),
