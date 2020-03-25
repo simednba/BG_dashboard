@@ -53,7 +53,7 @@ graphs_generals = {'MMR' : 'mmr',
               [Input('main', 'value')])
 def render_content(tab):
     if tab =='global':
-       return dbc.Container(
+       return dbc.Container(fluid = True, children =
     [
         dbc.Row(
             [
@@ -63,7 +63,7 @@ def render_content(tab):
                               html.Div('nombre de perso'),
                               dcc.Input(id='n_max', type="number",value = 5)])
                     ,width=6,
-                    style={"height": "100px"},
+                    style={"height": "150px"},
                 ),
                 dbc.Col(
                     html.Div([html.H2('Type de graphe'),
@@ -72,7 +72,7 @@ def render_content(tab):
                               dcc.Input(id='n_min_2', type="number",value = 3)])
                     ,
                     width=6,
-                    style={"height": "100px"},
+                    style={"height": "150px"},
                 ),
             ],
         ),
@@ -81,12 +81,12 @@ def render_content(tab):
                 dbc.Col(
                     html.Div(id='g1'),
                     width=6,
-                    style={"height": "900px", "margin" : '50px'},
+                    style={"height": "850px"},
                 ),
                 dbc.Col(
                     html.Div(id='g2'),
                     width=6,
-                    style={"height": "900px","margin" : '50px'},
+                    style={"height": "850px"},
                 ),
             ]
             ,
