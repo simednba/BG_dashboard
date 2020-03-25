@@ -60,6 +60,7 @@ def render_content(tab):
                 dbc.Col(
                     html.Div([html.H2('Type de graphe'),
                               dcc.Dropdown(id = 't_1', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()]),
+                              html.Div('nombre de perso'),
                               dcc.Input(id='n_max', type="number",value = 5)])
                     ,width=6,
                     style={"height": "100px"},
@@ -67,6 +68,7 @@ def render_content(tab):
                 dbc.Col(
                     html.Div([html.H2('Type de graphe'),
                               dcc.Dropdown(id = 't_2', options = [{'label' : k, 'value' : k} for k,v in graphs_generals.items()]),
+                              html.Div('Nombre de pick mini'),
                               dcc.Input(id='n_min_2', type="number",value = 3)])
                     ,
                     width=6,
@@ -79,12 +81,12 @@ def render_content(tab):
                 dbc.Col(
                     html.Div(id='g1'),
                     width=6,
-                    style={"height": "900px"},
+                    style={"height": "900px", "margin" : '50px'},
                 ),
                 dbc.Col(
                     html.Div(id='g2'),
                     width=6,
-                    style={"height": "900px"},
+                    style={"height": "900px","margin" : '50px'},
                 ),
             ]
             ,
@@ -145,7 +147,6 @@ def render_general_page1(t_1, n_max, n_min):
     else:
         key = graphs_generals[t_1]
         results = {}
-        print(key)
         if key not in ['position moyenne','gain mmr','pickrate', '% top 1','winrate'] or n_min == None:
             n_min = 0
         for champ in df_stats['nom']:
