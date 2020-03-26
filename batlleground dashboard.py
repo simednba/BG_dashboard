@@ -5,6 +5,7 @@ Created on Sat Mar 21 15:24:02 2020
 @author: simed
 """
 
+import os
 import dash
 import dash_bootstrap_components as dbc
 import dash_core_components as dcc
@@ -13,9 +14,19 @@ from dash.dependencies import Input, Output
 import dash_table
 import pandas as pd
 import plotly.graph_objs as go
-from bg_logs_reader import get_all_stats
+from bg_logs_reader import get_all_stats, rolling_mean
 import dash_table
 import numpy as np
+from PIL import Image
+
+
+
+IMG_PATH = 'D:/Ecole/3A/Battleground/BG_dashboard/images'
+
+imgs = {}
+for filename in os.listdir(IMG_PATH):
+    if filename.lower().endswith('.png'):
+        imgs[filename[:-4]] = Image.open(f'{IMG_PATH}\{filename}')
 
 app = dash.Dash(__name__, external_stylesheets = [dbc.themes.BOOTSTRAP])
 server = app.server
@@ -25,8 +36,9 @@ df_stats, df_top,df_all,all_matches, mmr = get_all_stats()
 
 app.layout = html.Div(children=[dcc.Tabs(id='main',value='main_v',children = [
     dcc.Tab(label='Global', value = 'global'),
-    dcc.Tab(label = 'all_table', value='all'),
-    dcc.Tab(label = 'par_perso', value = 'solo'),
+    dcc.Tab(label = 'Toute les Données', value='all'),
+    dcc.Tab(label = 'Par Perso', value = 'solo'),
+    dcc.Tab(label='Comparaison', value='compar'),
     ])
     ,
     html.Div(id = 'content'),
@@ -35,6 +47,7 @@ app.layout = html.Div(children=[dcc.Tabs(id='main',value='main_v',children = [
 ])
 
 graphs_generals = {'MMR' : 'mmr',
+                   'MMR avec moyenne' : 'mean_mmr',
                    'Placements' : 'p',
                    'Top picks(nombre)' : 'nombre de pick',
                    'Top pickrate' : 'pickrate',
@@ -109,7 +122,19 @@ def render_content(tab):
         return html.Div([dcc.Dropdown(id = 'choix_perso',
     options=[{'label' : k, 'value' : k} for k in df_stats['nom'].values]),
             html.Div(id = 'graph_char')])
+    
+    elif tab =='compar':
+        return html.Div(children=[
+                    dbc.Row([
+                            dbc.Col([html.H2('Colonnes a garder'),dcc.Dropdown(id = 'filtre_col_c',
+                                      options = [{'label' : v, 'value':v} for v in df_all.columns], multi = True, value=[v for v in df_all.columns]),
+                                     html.H2('sort by'),dcc.Dropdown(id = 'sort_c',
+                                      options = [{'label' : v, 'value':v} for v in df_all.columns], value='position moyenne'),
+                                     html.H2('Champions'),
+                                     dcc.Dropdown(id='champ_sel',options =[{'label' : k, 'value' : k} for k in df_stats['nom'].values], multi=True)]),
+                            dbc.Col(html.Div(id='content_table_c'), width = 9)])])
 
+    
 @app.callback(Output('g1', 'children'),
               [Input('t_1', 'value'),
                Input('n_max','value'),
@@ -128,7 +153,7 @@ def render_general_page1(t_1, n_max, n_min):
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
-        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Top 1'))
+        return html.Div(render_graph(x, y, t='bar'))
     elif t_1 =='Top victoire(absolu)':
         results = {}
         for champ in df_stats['nom']:
@@ -138,12 +163,12 @@ def render_general_page1(t_1, n_max, n_min):
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
-        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Victoires'))
+        return html.Div(render_graph(x, y, t='bar'))
     elif t_1 =='Placements':
         nb_parties = sum([x for x in df_all['nombre de pick'].values if not np.isnan(x)])
         x=df_top.columns[1:-1]
         y=[round(x) for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
-        return html.Div(render_graph(x,y,titre = 'Placements', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}<br>, Placement moyen :{round(sum([x/100*(i+1) for i,x in enumerate(df_top.loc["global"].values[1:-1])]),2)} '))
+        return html.Div(render_graph(x,y,titre = '', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}<br>, Placement moyen :{round(sum([x/100*(i+1) for i,x in enumerate(df_top.loc["global"].values[1:-1])]),2)} '))
     else:
         key = graphs_generals[t_1]
         results = {}
@@ -155,7 +180,7 @@ def render_general_page1(t_1, n_max, n_min):
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True if key not in ['position moyenne'] else False)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
-        return html.Div(render_graph(x, y, t='bar', titre=t_1))
+        return html.Div(render_graph(x, y, t='bar'))
 
 @app.callback(Output('g2', 'children'),
               [Input('t_2', 'value'),
@@ -174,7 +199,7 @@ def render_general_page1(t_1, n_max, n_min):
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
-        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Top 1'))
+        return html.Div(render_graph(x, y, t='bar'))
     elif t_1 =='Top victoire(absolu)':
         results = {}
         for champ in df_stats['nom']:
@@ -184,7 +209,7 @@ def render_general_page1(t_1, n_max, n_min):
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
-        return html.Div(render_graph(x, y, t='bar', titre='Nombres de Victoires'))
+        return html.Div(render_graph(x, y, t='bar'))
     elif t_1 =='Placements':
         nb_parties = sum([x for x in df_all['nombre de pick'].values if not np.isnan(x)])
         x=df_top.columns[1:-1]
@@ -193,7 +218,7 @@ def render_general_page1(t_1, n_max, n_min):
     else:
         key = graphs_generals[t_1]
         results = {}
-        if key not in ['position moyenne','gain mmr','pickrate', '% top 1','winrate'] or n_min ==None:
+        if key not in ['position moyenne','gain mmr','pickrate', '% top 1','winrate'] or n_min == None:
             n_min = 0
         for champ in df_stats['nom']:
             if not np.isnan(df_all.loc[champ][key]) and df_all.loc[champ]['nombre de pick']>=n_min:
@@ -201,7 +226,7 @@ def render_general_page1(t_1, n_max, n_min):
         sort_res = {k : v for k,v in sorted(results.items(), key = lambda x:x[1], reverse=True if key not in ['position moyenne'] else False)}
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
-        return html.Div(render_graph(x, y, t='bar', titre=t_1))   
+        return html.Div(render_graph(x, y, t='bar')) 
 @app.callback(Output('graph_char', 'children'),
               [Input('choix_perso', 'value')])
 def render_char_graph(char):
@@ -217,7 +242,7 @@ def render_char_graph(char):
                                      t = 'scatter')),                                                       
                 dbc.Col(render_graph(x=df_top.columns[1:-1],
                                      y=[round(x) for x in df_top.loc[char].values[1:-1]*df_stats.loc[char]['nombre de pick']/100],
-                                     titre='Placements'))
+                                     titre='Placements', t = 'pie_p'))
                 
           ]         
         ), dbc.Row([
@@ -251,10 +276,11 @@ def render_graph(x, y , titre, t='pie', fig_title = '' ):
                         
                             ])
     elif t =='bar':
-        return html.Div(style = {'height' : '50vh'},children=[
+        images = get_img_dict([imgs[char] for char in x])
+        return html.Div(style = {'height' : '90vh'},children=[
             html.H2(titre),
-            dcc.Graph(style = {'height' : 'inherit'},figure= go.Figure(data=[go.Bar(x=y, y=x, text=y, textposition = 'auto', orientation = 'h')],
-                                        layout = go.Layout(title = go.layout.Title(text=fig_title),yaxis=dict(autorange="reversed"))))])
+            dcc.Graph(style = {'height' : 'inherit'},figure= go.Figure(data=[go.Bar(x=y, text=y, textposition = 'auto', orientation = 'h')],
+                                        layout = go.Layout(title = go.layout.Title(text=fig_title),yaxis=dict(autorange="reversed"), images=images)))])
     elif t =='2bar':
         return html.Div([
             html.H2(titre),
@@ -291,6 +317,31 @@ def df2table(filter_columns, sort_by, n_min):
         ])
     ],className = 'table')
 
+@app.callback(Output('content_table_c', 'children'),
+              [Input('filtre_col_c','value'),
+               Input('sort_c','value'),
+               Input('champ_sel','value')])
+def render_comparison(filtre_col, sort_by, champs):
+    if champs ==None:
+        return html.Div('Selectionnez un personnage')
+    sort = ['nom','position moyenne','nombre de pick', 'winrate', 'pickrate', 'mmr total gagné','mmr total perdu','gain mmr', 'mmr moyen par partie', 'nombre de fois proposé', '% top 1', '% top 2', '% top 3', '% top 4', '% top 5', '% top 6', '% top 7', '% top 8', '% de parties', '% proposé']
+    dataframe = df_all[sort]
+    accepted_rows = champs
+    accepted_cols = df_all.columns if not filtre_col else filtre_col
+    asc = ['position moyenne','mmr total perdu']
+    if sort_by !=None:
+        dataframe = dataframe.sort_values(sort_by, ascending = False if sort_by not in asc else True)
+    return html.Table([
+        html.Thead(
+            html.Tr([html.Th(col) for col in dataframe.columns if col in accepted_cols])
+        ),
+        html.Tbody([
+            html.Tr([
+                html.Td(dataframe.iloc[i][col]) for col in dataframe.columns if col in accepted_cols
+            ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows 
+        ])
+    ],className = 'table')
+
 def df2table_simple(dataframe):
     return html.Table([
         html.Thead(
@@ -302,6 +353,19 @@ def df2table_simple(dataframe):
             ]) for i in reversed(range(len(dataframe))) 
         ])
     ], className='table')
+
+def get_img_dict(images):
+    return  [{'source' : img,
+         'layer' : 'below',
+         'x' : 1 ,
+         'y' : i-0.3,
+         'sizex' : 0.5,
+         'sizey' : 0.8,
+         'xref' : 'paper',
+         'yref' : 'y',
+         } for i, img in enumerate(images)]
+
+
 
 if __name__ == '__main__':
     app.run_server(debug=False)
