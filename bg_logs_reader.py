@@ -120,9 +120,15 @@ def extract_game_info(messages):
     results={'choices' : []}
     for i,line in enumerate(messages):
         if 'Player.CreateInHand' in line:
-            results['choices'].append(line.split(',')[2].split('=')[1])
+            hero = line.split(',')[2].split('=')[1]
+            if 'NOOOOOO' in hero:
+                hero = 'Illidan Stormrage'
+            results['choices'].append(hero)
         if 'Player.Play' in line:
-            results['hero'] = line.split(',')[2].split('=')[1]
+            hero = line.split(',')[2].split('=')[1]
+            if 'NOOOOOO' in hero:
+                hero = 'Illidan Stormrage'
+            results['hero'] = hero
             break
     return results
 
