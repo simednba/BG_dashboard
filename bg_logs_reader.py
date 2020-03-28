@@ -171,10 +171,11 @@ def extract_hdt_logs(dirpath):
 
 def extract_choices_and_pick(log_path):
     all_new, all_old = extract_hdt_logs(log_path)
-    new = {'choice' : [a['infos']['choices'] for d in all_new for a in d if a['infos']['choices'] != []],
-           'pick' :  [a['infos']['hero'] for d in all_new for a in d if a['infos']['choices'] != []]}
+    new = {'choice' : [a['infos']['choices'] for d in all_new for a in d if a['infos']['choices'] != [] and a['infos']['choices'] != ['The Coin']],
+           'pick' :  [a['infos']['hero'] for d in all_new for a in d if a['infos']['choices'] != [] and a['infos']['choices'] != ['The Coin']]}
     old = {'choice' : [a['infos']['choices'] for d in all_old for a in d if a['infos']['choices'] != []],
            'pick' :  [a['infos']['hero'] for d in all_old for a in d if a['infos']['choices'] != []]}
+    
     return new, old
     
             
