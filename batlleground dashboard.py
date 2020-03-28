@@ -230,7 +230,7 @@ def render_general_page1(t_1, n_max, n_min):
         nb_parties = sum([x for x in df_all['nombre de pick'].values if not np.isnan(x)])
         x=df_top.columns[1:-1]
         y=[round(x) for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
-        return html.Div(render_graph(x,y,titre = 'Placements', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}<br>, Placement moyen :{round(sum([x/100*(i+1) for i,x in enumerate(df_top.loc["global"].values[1:-1])]),2)} '))
+        return html.Div(render_graph(x,y,titre = '', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}<br>, Placement moyen :{round(sum([x/100*(i+1) for i,x in enumerate(df_top.loc["global"].values[1:-1])]),2)} '))
     else:
         key = graphs_generals[t_1]
         results = {}
