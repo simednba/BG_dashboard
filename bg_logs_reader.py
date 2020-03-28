@@ -211,8 +211,13 @@ def get_top_n_rate(pos):
     all_pos = [i for poses in pos.values() for i in poses]
     nb_per_pos = Counter(all_pos)    
     results['global'] = {k : round(v/len(all_pos),2) for k,v in nb_per_pos.items()}
+    for i in range(1,9):
+        if i not in results['global']:
+            results['global'][i] = 0
     for hero, places in pos.items():
         for place in places:
+            if place ==0:
+                continue
             results[hero][place] +=1
         for k,v in results[hero].items():
             results[hero][k]= round(results[hero][k]/len(pos[hero]),2)
