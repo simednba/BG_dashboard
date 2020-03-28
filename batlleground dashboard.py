@@ -144,7 +144,15 @@ def render_general_page1(t_1, n_max, n_min):
     if t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
-                    figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin' : {'t' : 10}}))
+                    figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))],layout={'margin' : {'t' : 0, 'l' : 0}}))
+    elif t_1=='MMR avec moyenne':
+        return dcc.Graph(
+                id='example-graph',
+                figure= go.Figure(data=[go.Scatter(name='MMR',y=mmr, x=list(range(len(mmr)))),
+                                        go.Scatter(name='moyenne sur 10 parties',y=rolling_mean(mmr,10), x=list(range(len(mmr)))),
+                                        go.Scatter(name='moyenne sur 25 parties',y=rolling_mean(mmr,25), x=list(range(len(mmr))))],
+                                  layout={'margin' : {'t' : 0, 'l' : 0}}))
+
     elif t_1 =='Top top 1(absolu)':
         results = {}
         for champ in df_stats['nom']:
@@ -190,7 +198,15 @@ def render_general_page1(t_1, n_max, n_min):
     if t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
-                    figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin' : {'t' : 10}}))
+                    figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))],layout={'margin' : {'t' : 0, 'l' : 0}}))
+    elif t_1=='MMR avec moyenne':
+        return dcc.Graph(
+                id='example-graph',
+                figure= go.Figure(data=[go.Scatter(name='MMR',y=mmr, x=list(range(len(mmr)))),
+                                        go.Scatter(name='moyenne sur 10 parties',y=rolling_mean(mmr,10), x=list(range(len(mmr)))),
+                                        go.Scatter(name='moyenne sur 25 parties',y=rolling_mean(mmr,25), x=list(range(len(mmr))))],
+                                  layout={'margin' : {'t' : 0, 'l' : 0}}))
+
     elif t_1 =='Top top 1(absolu)':
         results = {}
         for champ in df_stats['nom']:
