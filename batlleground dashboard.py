@@ -306,18 +306,21 @@ def render_graph(x, y , titre='', t='pie', fig_title = ''):
         return html.Div(style = {'height' : '90vh'},children=[
             html.H2(titre),
             dcc.Graph(style = {'height' : 'inherit'},figure= go.Figure(data=[go.Bar(x=y, text=y, textposition = 'auto', orientation = 'h')],
-                                        layout = go.Layout(title = go.layout.Title(text=fig_title),yaxis=dict(autorange="reversed"), images=images)))])
+                                        layout = go.Layout(margin = {'t' : 0, 'l' : 0},
+                                                           title = go.layout.Title(text=fig_title),yaxis=dict(autorange="reversed"), images=images)))])
     elif t =='2bar':
         return html.Div([
             html.H2(titre),
             dcc.Graph(figure= go.Figure(data=[go.Bar(name='nouveau',x=x, y=y[0], text=y[0], textposition = 'auto'),
                                               go.Bar(name='total',x=x, y=y[1], text=y[1], textposition = 'auto')],
-                                        layout = go.Layout(title = go.layout.Title(text=fig_title))))])
+                                        layout = go.Layout(margin = {'t' : 0, 'l' : 0},
+                                                           title = go.layout.Title(text=fig_title))))])
     elif t =='scatter':
         return html.Div([
             html.H2(titre),
             dcc.Graph(figure= go.Figure(data=[go.Scatter(x=x, y=y, text=y, textposition = 'top center')],
-                                        layout = go.Layout(title = go.layout.Title(text=fig_title))))])
+                                        layout = go.Layout(margin = {'t' : 0, 'l' : 0},
+                                                           title = go.layout.Title(text=fig_title))))])
 
         
 @app.callback(Output('content_table', 'children'),
