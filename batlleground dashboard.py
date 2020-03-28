@@ -282,12 +282,22 @@ def render_char_graph(char):
     return layout
 
     
-def render_graph(x, y , titre, t='pie', fig_title = '' ):
+def render_graph(x, y , titre='', t='pie', fig_title = ''):
     if t =='pie':
+        return html.Div(style = {'height' : '70vh'},children=[
+                        html.H2(titre),
+                        dcc.Graph(figure = go.Figure(data=[go.Pie(labels= x , values= y ,textinfo='label+percent+value')],
+                                                     layout = go.Layout(title = go.layout.Title(text=fig_title),
+                                                                        margin = {'t' :50, 'l' : 0})), 
+                                  style = {'height' : 'inherit'})
+                        
+                            ])
+    elif t =='pie_p':
         return html.Div(style = {'height' : '50vh'},children=[
                         html.H2(titre),
                         dcc.Graph(figure = go.Figure(data=[go.Pie(labels= x , values= y ,textinfo='label+percent+value')],
-                                                     layout = go.Layout(title = go.layout.Title(text=fig_title))), 
+                                                     layout = go.Layout(margin = {'t' : 0, 'l' : 0},
+                                                                        title = go.layout.Title(text=fig_title))), 
                                   style = {'height' : 'inherit'})
                         
                             ])
