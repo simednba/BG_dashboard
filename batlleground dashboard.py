@@ -330,7 +330,7 @@ def render_graph(x, y , titre='', t='pie', fig_title = ''):
 def df2table(filter_columns, sort_by, n_min):
     n_min = 0 if not n_min else n_min
     dataframe = df_all
-    accepted_rows = list(dataframe['nom'].values)
+    accepted_rows = list(dataframe['nom'].values)+['global']
     accepted_cols = dataframe.columns if not filter_columns else filter_columns
     asc = ['position moyenne','mmr total perdu']
     if sort_by !=None:
@@ -342,7 +342,7 @@ def df2table(filter_columns, sort_by, n_min):
         html.Tbody([
             html.Tr([
                 html.Td(dataframe.iloc[i][col]) for col in dataframe.columns if col in accepted_cols
-            ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows and dataframe.iloc[i]['nombre de pick'] >=n_min
+            ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows and (dataframe.iloc[i]['nombre de pick'] >=n_min or dataframe.iloc[i]['nom'] =='moyenne')
         ])
     ],className = 'table')
 
