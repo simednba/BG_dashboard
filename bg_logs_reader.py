@@ -312,6 +312,8 @@ def get_all_stats():
                                                                       '% de parties',
                                                                       '% proposé'
                                                                       ])
+    df.loc['global'] = df.describe().loc['mean'].round(2)
+    df.loc['global','nom'] = 'moyenne'
     top_n_temp =defaultdict(list)
     for hero, data_hero in top_n.items():
         hero = hero.replace('"','')
