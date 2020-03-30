@@ -28,8 +28,8 @@ def df_to_dict(df):
                      'turns' : elements[-5:]})
     return dics
 
-def get_mmr(data):
-    mmr = [int(match_data['mmr']) for match_data in data if int(match_data['mmr']) >6000 ]
+def get_all_mmr(data):
+    mmr = [int(match_data['mmr']) for match_data in data if int(match_data['mmr']) >3000]
     return mmr
     
 
@@ -157,27 +157,19 @@ def get_all_position(data):
 
 def extract_hdt_logs(dirpath):
     all_new = []
-    all_old = []
     for path in os.listdir(dirpath):
         if path.endswith('txt'):
             p = f'C:\\Users\\simed\\AppData\\Roaming\\HearthstoneDeckTracker\\Logs\\{path}'
             hours, types, messages = build_lists(p)
             all_new.append(extract_data(hours, messages))
-    for path in os.listdir(f'{dirpath}\\old'):
-        if path.endswith('txt'):
-            p = f'C:\\Users\\simed\\AppData\\Roaming\\HearthstoneDeckTracker\\Logs\\old\\{path}'
-            hours, types, messages = build_lists(p)
-            all_old.append(extract_data(hours, messages))
-    return all_new, all_old
+    return all_new
 
 def extract_choices_and_pick(log_path):
-    all_new, all_old = extract_hdt_logs(log_path)
+    all_new = extract_hdt_logs(log_path)
     new = {'choice' : [a['infos']['choices'] for d in all_new for a in d if a['infos']['choices'] != [] and a['infos']['choices'] != ['The Coin']],
            'pick' :  [a['infos']['hero'] for d in all_new for a in d if a['infos']['choices'] != [] and a['infos']['choices'] != ['The Coin']]}
-    old = {'choice' : [a['infos']['choices'] for d in all_old for a in d if a['infos']['choices'] != []],
-           'pick' :  [a['infos']['hero'] for d in all_old for a in d if a['infos']['choices'] != []]}
-    
-    return new, old
+
+    return new
     
             
 def get_mmr_gain(data):
@@ -188,9 +180,8 @@ def get_mmr_gain(data):
         results[result_match['hero']].append(int(result_match['mmr']) - int(data[index_match-1]['mmr']))
     return {k.replace('"',''): (np.mean(v), sum(v), -sum([i for i in v if i<0]), sum([i for i in v if i>0])) for k,v in results.items()}
 
-def get_pick_stats(new,old):
+def get_pick_stats(new):
     n = {}
-    o = {}
     for choice in new['choice']:
         for hero in choice:
             if hero not in n:
@@ -198,14 +189,7 @@ def get_pick_stats(new,old):
             n[hero][0] += 1
     for hero in new['pick']:
         n[hero][1] += 1
-    for choice in old['choice']:
-        for hero in choice:
-            if hero not in o:
-                o[hero] = [0,0]
-            o[hero][0] += 1
-    for hero in old['pick']:
-        o[hero][1] += 1
-    return n,o
+    return n
         
 def get_top_n_rate(pos):
     results = {k : {i : 0 for i in range(1,9)} for k in pos.keys()}
@@ -226,54 +210,24 @@ def get_top_n_rate(pos):
     
 
 def get_all_stats():
-
+    choices_and_pick = extract_choices_and_pick(LOG_PATH)
+    picks_stats = get_pick_stats(choices_and_pick)
     df = pd.read_csv(CSV_PATH, sep=';').values
-    
-    new, old = extract_choices_and_pick(LOG_PATH)
-    
-    p_new, p_old = get_pick_stats(new, old)
-    
     data = df_to_dict(df)
     all_matches_per_champ = get_all_matches_per_champ(data)
-    mmr_evo = get_mmr(data)
-    results = defaultdict(list)
-    positions = get_all_position(data) #all positions
+    mmr_evo = get_all_mmr(data)
+    positions = get_all_position(data) 
     mean_pos = {k.replace('"','') : np.mean(v) for k,v in positions.items() if len(v) !=0}#mean positions
     nb_played = {k.replace('"','') : len(v) for k,v in positions.items()}# nb times played(csv)
     mmr_data = get_mmr_gain(data)# mean and total mmr per champ
-    total_new = len(data)#total games(csv)
-    tot_pickrate_n = {k : v/total_new for k,v in nb_played.items()}# total pickrate csv
-    tot_pickrate_all_temp = defaultdict(int)
-    for hero, pick_data in p_old.items():
-        tot_pickrate_all_temp[hero] += pick_data[1]
-    for hero, nb in nb_played.items():
-        tot_pickrate_all_temp[hero] += nb
-    total_matches = total_new + sum([a[1] for a in p_old.values()])
-    tot_pickrate_all = {k: v/total_matches for k,v in tot_pickrate_all_temp.items()}# total pickrate csv+old
-    pickrate_new = {k : nb_played[k]/v[0] for k,v in p_new.items() if k in nb_played } # pickrate new ( but not csv)
-    p_all = {}
-    for hero, data in p_old.items():
-        if hero not in p_all:
-            p_all[hero] = [0,0]
-        p_all[hero][0] += data[0]
-        p_all[hero][1] += data[1]
-    for hero, data in p_new.items():
-            if hero not in p_all:
-                p_all[hero] = [0,0]
-            p_all[hero][0] += data[0]
-            p_all[hero][1] += data[1]
-    pickrate_all = {k : v[1]/v[0] for k,v in p_all.items()}# pickrate all
-    nb_played_all = defaultdict(int) # nb played all(csv + old)
-    for hero, data in nb_played.items():
-        nb_played_all[hero] += data
-    for hero, data in p_old.items():
-        nb_played_all[hero] +=data[1]    
-    nb_proposed_new = {k : v[0] for k,v in p_new.items()}
-    nb_proposed_all = {k : v[0] for k,v in p_all.items()}
-    percent_proposed_new = {k: v[0]/total_new for k,v in p_new.items()}
-    percent_proposed_old = {k : v[0]/total_matches for k,v in p_all.items()}
+    n_games = len(data)#total games(csv)
+    tot_pickrate_n = {k : v/n_games for k,v in nb_played.items()}# total pickrate csv
+    pickrate_new = {k : nb_played[k]/v[0] for k,v in picks_stats.items() if k in nb_played } # pickrate new ( but not csv)  
+    nb_proposed_new = {k : v[0] for k,v in picks_stats.items()}
+    percent_proposed_new = {k: v[0]/n_games for k,v in picks_stats.items()}
     top_n = get_top_n_rate(positions)
-    all_heros = pickrate_all.keys()
+    all_heros = pickrate_new.keys()
+    results = defaultdict(list)
     for hero in all_heros:
         if hero not in mean_pos:
             mean_pos[hero] = np.nan
@@ -287,12 +241,8 @@ def get_all_stats():
             nb_proposed_new[hero] = np.nan
         if hero not in pickrate_new:
             pickrate_new[hero] = np.nan
-        if hero not in tot_pickrate_all:
-            continue
         if hero not in percent_proposed_new:
             percent_proposed_new[hero] = 0
-        if hero not in percent_proposed_old:
-            percent_proposed_old[hero] = 0
         results[hero] = [hero,round_(mean_pos[hero],2),
                          round_(mmr_data[hero][0],0),
                          mmr_data[hero][3],mmr_data[hero][2],
