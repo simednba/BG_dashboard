@@ -20,6 +20,8 @@ def df_to_dict(df):
     dics = []
     for index,match_data in enumerate(df):
         elements = match_data[0].split(',')
+        if elements[1] =="":
+            continue
         i = 0 if elements[1] !='"Yogg-Saron' else 1
         dics.append({'date' : elements[0],
                      'hero' : elements[1],
@@ -159,7 +161,7 @@ def extract_hdt_logs(dirpath):
     all_new = []
     for path in os.listdir(dirpath):
         if path.endswith('txt'):
-            p = f'C:\\Users\\simed\\AppData\\Roaming\\HearthstoneDeckTracker\\Logs\\{path}'
+            p = f'{dirpath}\\{path}'
             hours, types, messages = build_lists(p)
             all_new.append(extract_data(hours, messages))
     return all_new
@@ -262,8 +264,7 @@ def get_all_stats():
                                                                       '% de parties',
                                                                       '% proposé'
                                                                       ])
-    df.loc['global'] = df.describe().loc['mean'].round(2)
-    df.loc['global','nom'] = 'moyenne'
+
     top_n_temp =defaultdict(list)
     for hero, data_hero in top_n.items():
         hero = hero.replace('"','')
