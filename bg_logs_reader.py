@@ -11,6 +11,7 @@ import os
 from collections import Counter
 from collections import defaultdict
 import numpy as np
+from config import LOG_PATH, CSV_PATH
 
 
 
@@ -225,11 +226,10 @@ def get_top_n_rate(pos):
     
 
 def get_all_stats():
-    path = 'C:\\Users\\simed\\AppData\\Roaming\\HearthstoneDeckTracker\\Logs'
-    path_csv = 'D:/BattlegroundsMatchData.csv'
-    df = pd.read_csv(path_csv, sep=';').values
+
+    df = pd.read_csv(CSV_PATH, sep=';').values
     
-    new, old = extract_choices_and_pick(path)
+    new, old = extract_choices_and_pick(LOG_PATH)
     
     p_new, p_old = get_pick_stats(new, old)
     

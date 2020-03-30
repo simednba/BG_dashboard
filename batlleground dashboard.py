@@ -18,10 +18,10 @@ from bg_logs_reader import get_all_stats, rolling_mean
 import dash_table
 import numpy as np
 from PIL import Image
+from config import IMG_PATH
 
 
 
-IMG_PATH = 'D:/Ecole/3A/Battleground/BG_dashboard/images'
 
 imgs = {}
 for filename in os.listdir(IMG_PATH):
