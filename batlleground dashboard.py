@@ -141,7 +141,9 @@ def render_content(tab):
                Input('n_min_2','value'),
                ])
 def render_general_page1(t_1, n_max, n_min):
-    if t_1 =='MMR':
+    if t_1==None:
+        pass
+    elif t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
                     figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))],layout={'margin' : {'t' : 0, 'l' : 0}}))
@@ -195,7 +197,9 @@ def render_general_page1(t_1, n_max, n_min):
                Input('n_max','value'),
                Input('n_min_2','value')])
 def render_general_page1(t_1, n_max, n_min):
-    if t_1 =='MMR':
+    if t_1==None:
+        pass
+    elif t_1 =='MMR':
         return dcc.Graph(
                     id='example-graph',
                     figure= go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))],layout={'margin' : {'t' : 0, 'l' : 0}}))
