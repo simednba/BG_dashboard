@@ -33,6 +33,10 @@ server = app.server
 app.config.suppress_callback_exceptions = True
 
 df_stats, df_top,df_all,all_matches, mmr = get_all_stats()
+df_all.loc['global',df_stats.describe().columns] = df_stats.describe().loc['mean'].round(2)
+df_all.loc['global','nom'] = 'moyenne'
+
+
 
 app.layout = html.Div(children=[dcc.Tabs(id='main',value='main_v',children = [
     dcc.Tab(label='Global', value = 'global'),
@@ -175,7 +179,7 @@ def render_general_page1(t_1, n_max, n_min):
         y = list(sort_res.values())[:n_max]
         return html.Div(render_graph(x, y, t='bar'))
     elif t_1 =='Placements':
-        nb_parties = sum([x for x in df_all['nombre de pick'].values if not np.isnan(x)])
+        nb_parties = sum([x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
         x=df_top.columns[1:-1]
         y=[round(x) for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
         return html.Div(render_graph(x,y,titre = '', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}<br>, Placement moyen :{round(sum([x/100*(i+1) for i,x in enumerate(df_top.loc["global"].values[1:-1])]),2)} '))
@@ -231,7 +235,7 @@ def render_general_page1(t_1, n_max, n_min):
         y = list(sort_res.values())[:n_max]
         return html.Div(render_graph(x, y, t='bar'))
     elif t_1 =='Placements':
-        nb_parties = sum([x for x in df_all['nombre de pick'].values if not np.isnan(x)])
+        nb_parties = sum([x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
         x=df_top.columns[1:-1]
         y=[round(x) for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
         return html.Div(render_graph(x,y,titre = '', fig_title = f'Winrate global : {df_top.loc["global"]["winrate"]}<br>, Placement moyen :{round(sum([x/100*(i+1) for i,x in enumerate(df_top.loc["global"].values[1:-1])]),2)} '))
@@ -334,7 +338,7 @@ def render_graph(x, y , titre='', t='pie', fig_title = ''):
 def df2table(filter_columns, sort_by, n_min):
     n_min = 0 if not n_min else n_min
     dataframe = df_all
-    accepted_rows = list(dataframe['nom'].values)+['global']
+    accepted_rows = list(dataframe['nom'].values)+['moyenne']
     accepted_cols = dataframe.columns if not filter_columns else filter_columns
     asc = ['position moyenne','mmr total perdu']
     if sort_by !=None:
