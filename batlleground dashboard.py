@@ -286,21 +286,20 @@ def render_char_graph(char):
                                      y=[round(x) for x in df_top.loc[char].values[1:-1]
                                         * df_stats.loc[char]['nombre de pick']/100],
                                      titre=f"Placements, winrate = {df_all.loc[char]['winrate']}%, position moyenne =  {df_all.loc[char]['position moyenne']}", t='bar_p'))
-
                 ]
                 ), dbc.Row([
-                    dbc.Col(dcc.Markdown(f'''
-                                     ### Stats générales
+                    dbc.Col(html.Div(dcc.Markdown(f'''
+                                     # Stats générales
                                      - **Nombre de Parties** : {df_all.loc[char]['nombre de pick']}
                                      - **Winrate** : {df_all.loc[char]['winrate']}
                                      - **Position moyenne** : {df_all.loc[char]['position moyenne']}
-                                     - **Proposé dans % de parties** : {df_all.loc[char]['% proposé']}
                                      - **Pickrate** : {df_all.loc[char]['pickrate']}
                                      - **Gain moyen de MMR** : {df_all.loc[char]['mmr moyen par partie']}
                                      - **Gain relatif de MMR** : {df_all.loc[char]['gain mmr']}
                                      - **Gain total de MMR** : {df_all.loc[char]['mmr total gagné']}
                                      - **Perte total de MMR** : {df_all.loc[char]['mmr total perdu']}
-                                     ''', className='md')),
+                                     - **Proposé dans % de parties** : {df_all.loc[char]['% proposé']}
+                                     ''', className='md')), style={'textAlign': 'center', 'fontSize': '25px'}),
                     dbc.Col([html.H2('Dernieres parties'),
                              df2table_simple(all_matches[char])]),
 
