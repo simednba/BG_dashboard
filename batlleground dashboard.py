@@ -282,10 +282,10 @@ def render_char_graph(char):
                                      y=all_matches[char]['gain mmr total'].values,
                                      titre='Gain MMR total selon les matchs',
                                      t='scatter')),
-                dbc.Col(render_graph(x=df_top.columns[1:-1],
+                dbc.Col(render_graph(x=[d.replace('%', '') for d in df_top.columns[1:-1]],
                                      y=[round(x) for x in df_top.loc[char].values[1:-1]
                                         * df_stats.loc[char]['nombre de pick']/100],
-                                     titre='Placements', t='pie_p'))
+                                     titre=f"Placements, winrate = {df_all.loc[char]['winrate']}%, position moyenne =  {df_all.loc[char]['position moyenne']}", t='bar_p'))
 
                 ]
                 ), dbc.Row([
@@ -335,6 +335,13 @@ def render_graph(x, y, titre='', t='pie', fig_title=''):
             dcc.Graph(style={'height': 'inherit'}, figure=go.Figure(data=[go.Bar(x=y, text=y, textposition='auto', orientation='h')],
                                                                     layout=go.Layout(margin={'t': 0, 'l': 0},
                                                                                      title=go.layout.Title(text=fig_title), yaxis=dict(autorange="reversed"), images=images)))])
+    elif t == 'bar_p':
+        return html.Div(style={'height': '50vh'}, children=[
+                        html.H2(titre),
+                        dcc.Graph(figure=go.Figure(data=[go.Bar(x=x, y=y, text=[round(i*100/sum(y)) for i in y], textposition='outside')],
+                                                   layout=go.Layout(margin={'t': 0, 'l': 0},
+                                                                    title=go.layout.Title(text=fig_title))),
+                                  style={'height': 'inherit'})])
     elif t == '2bar':
         return html.Div([
             html.H2(titre),
@@ -391,7 +398,7 @@ def render_comparison(filtre_col, sort_by, champs):
     sort = ['nom', 'position moyenne', 'winrate', 'mmr moyen par partie',  'gain mmr', 'mmr total gagné',
             'mmr total perdu', 'pickrate', 'nombre de pick',
             '% top 1', '% top 2', '% top 3', '% top 4', '% top 5', '% top 6',
-                       '% top 7', '% top 8']
+            '% top 7', '% top 8']
     dataframe = df_all[sort]
     accepted_rows = champs
     accepted_cols = df_all.columns if not filtre_col else filtre_col
