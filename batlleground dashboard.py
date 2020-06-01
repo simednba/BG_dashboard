@@ -50,7 +50,8 @@ app.layout = html.Div(children=[dcc.Tabs(id='main', value='main_v', children=[
 
 graphs_generals = {'MMR': 'mmr',
                    'MMR avec moyenne': 'mean_mmr',
-                   'Placements': 'p',
+                   'Placements(pie)': 'p',
+                   'Placements(bar)': 'p_b',
                    'Top picks(nombre)': 'nombre de pick',
                    'Top pickrate': 'pickrate',
                    'Top propose(nombre)': 'nombre de fois proposé',
@@ -181,16 +182,27 @@ def render_general_page1(t_1, n_max, n_min):
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
         return html.Div(render_graph(x, y, t='bar'))
-    elif t_1 == 'Placements':
+    elif t_1 == 'Placements(pie)':
         nb_parties = sum(
             [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
-        x = df_top.columns[1:-1]
+        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
         y = [round(x)
              for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
         return html.Div(
             render_graph(
                 x, y, titre='',
-                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}<br>, Placement moyen : "+round(sum([x/100*(i+1) for i, x in enumerate(df_top.loc['global'].values[1:-1])]), 2)))
+                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}<br>, Placement moyen : {mean_position}"))
+    elif t_1 == 'Placements(bar)':
+        nb_parties = sum(
+            [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
+        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
+        y = [round(x)
+             for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+        return html.Div(
+            render_graph(
+                x, y, titre='', t='bar_g',
+                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}, Placement moyen : {mean_position}"))
+
     else:
         key = graphs_generals[t_1]
         results = {}
@@ -249,13 +261,27 @@ def render_general_page1(t_1, n_max, n_min):
         x = list(sort_res.keys())[:n_max]
         y = list(sort_res.values())[:n_max]
         return html.Div(render_graph(x, y, t='bar'))
-    elif t_1 == 'Placements':
+    elif t_1 == 'Placements(pie)':
         nb_parties = sum(
             [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
-        x = df_top.columns[1:-1]
+        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
         y = [round(x)
              for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
-        return html.Div(render_graph(x, y, titre='', fig_title=f'Winrate global : {df_top.loc["global"]["winrate"]}<br>, Placement moyen :{round(sum([x/100*(i+1) for i,x in enumerate(df_top.loc["global"].values[1:-1])]),2)} '))
+        return html.Div(
+            render_graph(
+                x, y, titre='',
+                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}<br>, Placement moyen : {mean_position}"))
+    elif t_1 == 'Placements(bar)':
+        nb_parties = sum(
+            [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
+        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
+        y = [round(x)
+             for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+        return html.Div(
+            render_graph(
+                x, y, titre='', t='bar_g',
+                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}, Placement moyen : {mean_position}"))
+
     else:
         key = graphs_generals[t_1]
         results = {}
@@ -278,8 +304,9 @@ def render_char_graph(char):
         return html.Div('Pas de parties !')
     layout = html.Div([
         dbc.Row([
-                dbc.Col(render_graph(x=list(range(len(all_matches[char]))),
-                                     y=all_matches[char]['gain mmr total'].values,
+                dbc.Col(render_graph(x=list(range(len(all_matches[char])+1)),
+                                     y=[0]+list(all_matches[char]
+                                                ['gain mmr total'].values),
                                      titre='Gain MMR total selon les matchs',
                                      t='scatter')),
                 dbc.Col(render_graph(x=[d.replace('%', '') for d in df_top.columns[1:-1]],
@@ -308,13 +335,16 @@ def render_char_graph(char):
     return layout
 
 
-def render_graph(x, y, titre='', t='pie', fig_title=''):
+def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
     if t == 'pie':
+        colors = ['#2ED9FF', '#17BECF', '#00B5F7', '#2E91E5',
+                  '#FBE426', '#FEAF16', '#FD3216', '#DC3912']
         return html.Div(style={'height': '70vh'}, children=[
                         html.H2(titre),
-                        dcc.Graph(figure=go.Figure(data=[go.Pie(labels=x, values=y, textinfo='label+percent+value')],
+                        dcc.Graph(figure=go.Figure(data=[go.Pie(labels=x, values=y, textinfo='label+percent+value', marker=go.Marker(colors=colors))],
                                                    layout=go.Layout(title=go.layout.Title(text=fig_title),
-                                                                    margin={'t': 50, 'l': 0})),
+                                                                    margin={'t': 50, 'l': 0})
+                                                   ),
                                   style={'height': 'inherit'})
 
                         ])
@@ -340,6 +370,13 @@ def render_graph(x, y, titre='', t='pie', fig_title=''):
                         dcc.Graph(figure=go.Figure(data=[go.Bar(x=x, y=y, text=[round(i*100/sum(y)) for i in y], textposition='outside')],
                                                    layout=go.Layout(margin={'t': 0, 'l': 0},
                                                                     title=go.layout.Title(text=fig_title))),
+                                  style={'height': 'inherit'})])
+    elif t == 'bar_g':
+        return html.Div(style={'height': '50vh'}, children=[
+                        html.H2(titre),
+                        dcc.Graph(figure=go.Figure(data=[go.Bar(x=x, y=y, text=[round(i*100/sum(y)) for i in y], textposition='outside')],
+                                                   layout=go.Layout(margin={'t': 0, 'l': 0},
+                                                                    title=go.layout.Title(text=fig_title, y=0))),
                                   style={'height': 'inherit'})])
     elif t == '2bar':
         return html.Div([
