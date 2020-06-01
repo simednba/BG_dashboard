@@ -208,7 +208,8 @@ def get_all_stats():
     data = df_to_dict(df)
     all_matches_per_champ = get_all_matches_per_champ(data)
     mmr_evo = get_all_mmr(data)
-    positions = get_all_position(data) 
+    positions = get_all_position(data)
+    mean_position = round_(np.mean([v for x in positions.values() for v in x]),2) 
     mean_pos = {k.replace('"','') : np.mean(v) for k,v in positions.items() if len(v) !=0}#mean positions
     nb_played = {k.replace('"','') : len(v) for k,v in positions.items()}# nb times played(csv)
     mmr_data = get_mmr_gain(data)# mean and total mmr per champ
@@ -264,7 +265,7 @@ def get_all_stats():
         top_n_temp[hero].insert(0, hero.replace('"',''))
     df_top_n = pd.DataFrame.from_dict(top_n_temp, orient = 'index', columns = ['nom']+[f'% top {i}' for i in range(1,9)]+['winrate'])
     df_all = pd.concat([df, df_top_n.drop('nom',axis=1)], axis=1)
-    return df, df_top_n,df_all,all_matches_per_champ, mmr_evo
+    return df, df_top_n,df_all,all_matches_per_champ, mmr_evo, mean_position
     
         
 def round_(nb, n=2):

@@ -31,7 +31,7 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 app.config.suppress_callback_exceptions = True
 
-df_stats, df_top, df_all, all_matches, mmr = get_all_stats()
+df_stats, df_top, df_all, all_matches, mmr, mean_position = get_all_stats()
 df_all.loc['global', df_stats.describe(
 ).columns] = df_stats.describe().loc['mean'].round(2)
 df_all.loc['global', 'nom'] = 'moyenne'
