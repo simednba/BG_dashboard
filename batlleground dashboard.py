@@ -134,7 +134,12 @@ def render_content(tab):
                          html.H2('sort by'), dcc.Dropdown(id='sort_c',
                                                           options=[{'label': v, 'value': v} for v in df_all.columns], value='position moyenne'),
                          html.H2('Champions'),
-                         dcc.Dropdown(id='champ_sel', options=[{'label': k, 'value': k} for k in df_stats['nom'].values], multi=True)]),
+                         dcc.Dropdown(id='champ_sel', options=[
+                                      {'label': k, 'value': k} for k in df_stats['nom'].values], multi=True),
+                         dcc.RadioItems(id='compar_type', options=[
+                             {'label': 'Tableau', 'value': 'table'},
+                             {'label': 'Graphes', 'value': 'graph'}
+                         ], value='table')]),
                 dbc.Col(html.Div(id='content_table_c'), width=9)])])
 
 
@@ -336,6 +341,7 @@ def render_char_graph(char):
 
 
 def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
+    # General pie
     if t == 'pie':
         colors = ['#2ED9FF', '#17BECF', '#00B5F7', '#2E91E5',
                   '#FBE426', '#FEAF16', '#FD3216', '#DC3912']
@@ -348,6 +354,7 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
                                   style={'height': 'inherit'})
 
                         ])
+    # Pie per char ( Not used)
     elif t == 'pie_p':
         return html.Div(style={'height': '50vh'}, children=[
                         html.H2(titre),
@@ -357,13 +364,15 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
                                   style={'height': 'inherit'})
 
                         ])
+    # Bar graphs with images
     elif t == 'bar':
         images = get_img_dict([imgs[char] for char in x])
         return html.Div(style={'height': '90vh'}, children=[
             html.H2(titre),
             dcc.Graph(style={'height': 'inherit'}, figure=go.Figure(data=[go.Bar(x=y, text=y, textposition='auto', orientation='h')],
                                                                     layout=go.Layout(margin={'t': 0, 'l': 0},
-                                                                                     title=go.layout.Title(text=fig_title), yaxis=dict(autorange="reversed"), images=images)))])
+                                                                                     title=go.layout.Title(text=fig_title), yaxis=dict(autorange="reversed", showticklabels=False), images=images)))])
+    # Bar graph for char page
     elif t == 'bar_p':
         return html.Div(style={'height': '50vh'}, children=[
                         html.H2(titre),
@@ -371,6 +380,7 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
                                                    layout=go.Layout(margin={'t': 0, 'l': 0},
                                                                     title=go.layout.Title(text=fig_title))),
                                   style={'height': 'inherit'})])
+    # Bar graph for overall placement
     elif t == 'bar_g':
         return html.Div(style={'height': '50vh'}, children=[
                         html.H2(titre),
@@ -378,6 +388,15 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
                                                    layout=go.Layout(margin={'t': 0, 'l': 0},
                                                                     title=go.layout.Title(text=fig_title, y=0))),
                                   style={'height': 'inherit'})])
+    # Bar graph for comparison
+    elif t == 'bar_c':
+        images = get_img_dict([imgs[char] for char in x])
+        return html.Div(style={'height': '40vh'}, children=[
+            html.H2(titre),
+            dcc.Graph(style={'height': 'inherit'}, figure=go.Figure(data=[go.Bar(x=y, text=y, textposition='auto', orientation='h')],
+                                                                    layout=go.Layout(margin={'t': 0, 'l': 0},
+                                                                                     title=go.layout.Title(text=fig_title), yaxis=dict(autorange="reversed", showticklabels=False), images=images)))])
+    # 2 bars ( not used)
     elif t == '2bar':
         return html.Div([
             html.H2(titre),
@@ -385,6 +404,7 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
                                              go.Bar(name='total', x=x, y=y[1], text=y[1], textposition='auto')],
                                        layout=go.Layout(margin={'t': 0, 'l': 0},
                                                         title=go.layout.Title(text=fig_title))))])
+    # Line plots
     elif t == 'scatter':
         return html.Div([
             html.H2(titre),
@@ -427,32 +447,65 @@ def df2table(filter_columns, sort_by, n_min):
 @app.callback(Output('content_table_c', 'children'),
               [Input('filtre_col_c', 'value'),
                Input('sort_c', 'value'),
-               Input('champ_sel', 'value')])
-def render_comparison(filtre_col, sort_by, champs):
+               Input('champ_sel', 'value'),
+               Input('compar_type', 'value')])
+def render_comparison(filtre_col, sort_by, champs, compar_type):
     if champs == None:
         return html.Div('Selectionnez un personnage')
-    sort = ['nom', 'position moyenne', 'winrate', 'mmr moyen par partie',  'gain mmr', 'mmr total gagné',
-            'mmr total perdu', 'pickrate', 'nombre de pick',
-            '% top 1', '% top 2', '% top 3', '% top 4', '% top 5', '% top 6',
-            '% top 7', '% top 8']
-    dataframe = df_all[sort]
-    accepted_rows = champs
-    accepted_cols = df_all.columns if not filtre_col else filtre_col
-    asc = ['position moyenne', 'mmr total perdu']
-    if sort_by != None:
-        dataframe = dataframe.sort_values(
-            sort_by, ascending=False if sort_by not in asc else True)
-    return html.Table([
-        html.Thead(
-            html.Tr([html.Th(col)
-                     for col in dataframe.columns if col in accepted_cols])
-        ),
-        html.Tbody([
-            html.Tr([
-                html.Td(dataframe.iloc[i][col]) for col in dataframe.columns if col in accepted_cols
-            ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows
-        ])
-    ], className='table')
+    if compar_type == 'table':
+        sort = ['nom', 'position moyenne', 'winrate', 'mmr moyen par partie',  'gain mmr', 'mmr total gagné',
+                'mmr total perdu', 'pickrate', 'nombre de pick',
+                '% top 1', '% top 2', '% top 3', '% top 4', '% top 5', '% top 6',
+                '% top 7', '% top 8']
+        dataframe = df_all[sort]
+        accepted_rows = champs
+        accepted_cols = df_all.columns if not filtre_col else filtre_col
+        asc = ['position moyenne', 'mmr total perdu']
+        if sort_by != None:
+            dataframe = dataframe.sort_values(
+                sort_by, ascending=False if sort_by not in asc else True)
+        return html.Table([
+            html.Thead(
+                html.Tr([html.Th(col)
+                         for col in dataframe.columns if col in accepted_cols])
+            ),
+            html.Tbody([
+                html.Tr([
+                    html.Td(dataframe.iloc[i][col]) for col in dataframe.columns if col in accepted_cols
+                ]) for i in range(len(dataframe)) if dataframe.iloc[i]['nom'] in accepted_rows
+            ])
+        ], className='table')
+    elif compar_type == 'graph':
+        gains_mmr = {champ: all_matches[champ]
+                     ['gain mmr total'].values for champ in champs}
+        placement_moyen = {
+            champ: df_all.loc[champ]['position moyenne'] for champ in champs}
+        placement_sorted = {k: v for k, v in sorted(
+            placement_moyen.items(), key=lambda x: x[1], reverse=False)}
+        placement_x = list(placement_sorted.keys())
+        placement_y = list(placement_sorted.values())
+        winrate = {
+            champ: df_all.loc[champ]['winrate'] for champ in champs}
+        winrate_sorted = {k: v for k, v in sorted(
+            winrate.items(), key=lambda x: x[1], reverse=True)}
+        winrate_x = list(winrate_sorted.keys())
+        winrate_y = list(winrate_sorted.values())
+        return html.Div(children=[
+            dbc.Row(children=[dbc.Col([html.H2('Position moyenne'), render_graph(placement_x, placement_y, t='bar_c', fig_title='Position moyenne')]),
+                              dbc.Col(dcc.Graph(
+                                  id='compar_mmr',
+                                  figure=go.Figure(data=[go.Scatter(name=champ, y=[0]+list(gains_mmr[champ]), x=[*range(len(gains_mmr[champ])+1)]) for champ in champs],
+                                                   layout=go.Layout(title=go.layout.Title(
+                                                       text=' <b>Gain de MMR selon les matchs </b>'))
+
+                                                   )))
+
+
+                              ]),
+            dbc.Row(children=[
+                dbc.Col([html.H2('Winrate'), render_graph(winrate_x, winrate_y,
+                                                          t='bar_c', fig_title='Winrate')])
+            ])])
 
 
 def df2table_simple(dataframe):
