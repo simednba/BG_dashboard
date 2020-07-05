@@ -34,8 +34,6 @@ def get_all_mmr(data):
     mmr = [int(match_data['mmr']) for match_data in data if int(match_data['mmr']) >3000]
     return mmr
     
-
-
 def build_lists(path):
     with open(path,'r') as f:
         data=f.read()
@@ -54,8 +52,6 @@ def build_lists(path):
         types.append(type_)
         messages.append(mess)
     return hours, types, messages
-
-
 
 def locate_starts(messages):
     results = []
@@ -85,8 +81,6 @@ def extract_data(hours, messages):
         results.append(extract_match_data(hours_data, messages_data))
     return results
     
-
-
 def extract_match_data(hours, messages):
     turns = locate_turns(messages)
     turns.insert(0,0)
@@ -115,10 +109,7 @@ def extract_match_data(hours, messages):
     results['result'] = [position, prev, new]
     results['minions'] = last_minions
     return results
-    
-            
-            
-            
+               
 def extract_game_info(messages):
     results={'choices' : []}
     for i,line in enumerate(messages):
@@ -169,17 +160,17 @@ def extract_hdt_logs(dirpath):
 def extract_choices_and_pick(log_path):
     all_new = extract_hdt_logs(log_path)
     new = {'choice' : [a['infos']['choices'] for d in all_new for a in d if a['infos']['choices'] != [] and a['infos']['choices'] != ['The Coin']],
-           'pick' :  [a['infos']['hero'] for d in all_new for a in d if a['infos']['choices'] != [] and a['infos']['choices'] != ['The Coin']]}
+           'pick' :  [a['infos']['hero'] for d in all_new for a in d if a['infos']['choices'] != [] and 'The Coin' not in  a['infos']['choices']]}
 
     return new
-    
             
 def get_mmr_gain(data):
     results = defaultdict(list)
     for index_match,result_match in enumerate(data):
         if index_match == 0:
             results[result_match['hero']].append(0)
-        results[result_match['hero']].append(int(result_match['mmr']) - int(data[index_match-1]['mmr']))
+        else:
+            results[result_match['hero']].append(int(result_match['mmr']) - int(data[index_match-1]['mmr']))
     return {k.replace('"',''): (np.mean(v), sum(v), -sum([i for i in v if i<0]), sum([i for i in v if i>0])) for k,v in results.items()}
 
 def get_pick_stats(new):
@@ -210,7 +201,6 @@ def get_top_n_rate(pos):
             results[hero][k]= round(results[hero][k]/len(pos[hero]),2)
     return results
     
-
 def get_all_stats():
     choices_and_pick = extract_choices_and_pick(LOG_PATH)
     picks_stats = get_pick_stats(choices_and_pick)
@@ -218,7 +208,8 @@ def get_all_stats():
     data = df_to_dict(df)
     all_matches_per_champ = get_all_matches_per_champ(data)
     mmr_evo = get_all_mmr(data)
-    positions = get_all_position(data) 
+    positions = get_all_position(data)
+    mean_position = round_(np.mean([v for x in positions.values() for v in x]),2) 
     mean_pos = {k.replace('"','') : np.mean(v) for k,v in positions.items() if len(v) !=0}#mean positions
     nb_played = {k.replace('"','') : len(v) for k,v in positions.items()}# nb times played(csv)
     mmr_data = get_mmr_gain(data)# mean and total mmr per champ
@@ -274,10 +265,9 @@ def get_all_stats():
         top_n_temp[hero].insert(0, hero.replace('"',''))
     df_top_n = pd.DataFrame.from_dict(top_n_temp, orient = 'index', columns = ['nom']+[f'% top {i}' for i in range(1,9)]+['winrate'])
     df_all = pd.concat([df, df_top_n.drop('nom',axis=1)], axis=1)
-    return df, df_top_n,df_all,all_matches_per_champ, mmr_evo
+    return df, df_top_n,df_all,all_matches_per_champ, mmr_evo, mean_position
     
-    
-    
+        
 def round_(nb, n=2):
     if nb==np.nan:
         return nb
