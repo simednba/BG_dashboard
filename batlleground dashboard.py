@@ -14,7 +14,7 @@ from dash.dependencies import Input, Output
 import dash_table
 import pandas as pd
 import plotly.graph_objs as go
-from bg_logs_reader import get_all_stats, rolling_mean
+from compute_stats import get_all_stats, rolling_mean
 import dash_table
 import numpy as np
 from PIL import Image
