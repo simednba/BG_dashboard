@@ -77,6 +77,9 @@ def get_player(match_data):
 
 
 def locate_turns(messages):
+    """
+    locate turn starts indexes
+    """
     results = []
     for index, mess in enumerate(messages):
         if 'Player turn' in mess:
@@ -105,6 +108,9 @@ def extract_game_choices_and_pick(messages):
 
 
 def extract_board(simulation_data):
+    """
+    extract the player board
+    """
     minions = []
     for line in simulation_data:
         minions.append(line.split('>>')[1].split('),')[0]+')')
