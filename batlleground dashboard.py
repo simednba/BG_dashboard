@@ -31,10 +31,10 @@ app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
 server = app.server
 app.config.suppress_callback_exceptions = True
 
-df_stats, df_top, df_all, all_matches, mmr, mean_position = get_all_stats()
-df_all.loc['global', df_stats.describe(
-).columns] = df_stats.describe().loc['mean'].round(2)
-df_all.loc['global', 'nom'] = 'moyenne'
+df_stats_champs, df_top_champs, df_all_champ, all_matches_champs, mmr, mean_position, cbt_winrate_champs, comp_types_per_champ, comp_types, battle_luck = get_all_stats()
+df_all_champ.loc['global', df_stats_champs.describe(
+).columns] = df_stats_champs.describe().loc['mean'].round(2)
+df_all_champ.loc['global', 'nom'] = 'moyenne'
 
 
 app.layout = html.Div(children=[dcc.Tabs(id='main', value='main_v', children=[
@@ -115,27 +115,27 @@ def render_content(tab):
         return html.Div(children=[
             dbc.Row([
                 dbc.Col([html.H2('Colonnes a garder'), dcc.Dropdown(id='filtre_col',
-                                                                    options=[{'label': v, 'value': v} for v in df_all.columns], multi=True, value=[v for v in df_all.columns]),
+                                                                    options=[{'label': v, 'value': v} for v in df_all_champ.columns], multi=True, value=[v for v in df_all_champ.columns]),
                          html.H2('sort by'), dcc.Dropdown(id='sort',
-                                                          options=[{'label': v, 'value': v} for v in df_all.columns]),
+                                                          options=[{'label': v, 'value': v} for v in df_all_champ.columns]),
                          html.H2('Nombre de pick mini'),
                          dcc.Input(id='n_min', type="number", value=1)], width=3),
                 dbc.Col(html.Div(id='content_table'), width=9)])])
     elif tab == 'solo':
         return html.Div([dcc.Dropdown(id='choix_perso',
-                                      options=[{'label': k, 'value': k} for k in df_stats['nom'].values]),
+                                      options=[{'label': k, 'value': k} for k in df_stats_champs['nom'].values]),
                          html.Div(id='graph_char')])
 
     elif tab == 'compar':
         return html.Div(children=[
             dbc.Row([
                 dbc.Col([html.H2('Colonnes a garder'), dcc.Dropdown(id='filtre_col_c',
-                                                                    options=[{'label': v, 'value': v} for v in df_all.columns], multi=True, value=[v for v in df_all.columns]),
+                                                                    options=[{'label': v, 'value': v} for v in df_all_champ.columns], multi=True, value=[v for v in df_all_champ.columns]),
                          html.H2('sort by'), dcc.Dropdown(id='sort_c',
-                                                          options=[{'label': v, 'value': v} for v in df_all.columns], value='position moyenne'),
+                                                          options=[{'label': v, 'value': v} for v in df_all_champ.columns], value='position moyenne'),
                          html.H2('Champions'),
                          dcc.Dropdown(id='champ_sel', options=[
-                                      {'label': k, 'value': k} for k in df_stats['nom'].values], multi=True),
+                                      {'label': k, 'value': k} for k in df_stats_champs['nom'].values], multi=True),
                          dcc.RadioItems(id='compar_type', options=[
                              {'label': 'Tableau', 'value': 'table'},
                              {'label': 'Graphes', 'value': 'graph'}
@@ -166,10 +166,10 @@ def render_general_page1(t_1, n_max, n_min):
 
     elif t_1 == 'Top top 1(absolu)':
         results = {}
-        for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ]['nombre de pick']) and not np.isnan(df_all.loc[champ]['% top 1']):
+        for champ in df_stats_champs['nom']:
+            if not np.isnan(df_all_champ.loc[champ]['nombre de pick']) and not np.isnan(df_all_champ.loc[champ]['% top 1']):
                 results[champ] = round(
-                    df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['% top 1']/100)
+                    df_all_champ.loc[champ]['nombre de pick']*df_all_champ.loc[champ]['% top 1']/100)
         sort_res = {k: v for k, v in sorted(
             results.items(), key=lambda x: x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
@@ -177,10 +177,10 @@ def render_general_page1(t_1, n_max, n_min):
         return html.Div(render_graph(x, y, t='bar'))
     elif t_1 == 'Top victoire(absolu)':
         results = {}
-        for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ]['nombre de pick']) and not np.isnan(df_all.loc[champ]['winrate']):
+        for champ in df_stats_champs['nom']:
+            if not np.isnan(df_all_champ.loc[champ]['nombre de pick']) and not np.isnan(df_all_champ.loc[champ]['winrate']):
                 results[champ] = round(
-                    df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['winrate']/100)
+                    df_all_champ.loc[champ]['nombre de pick']*df_all_champ.loc[champ]['winrate']/100)
 
         sort_res = {k: v for k, v in sorted(
             results.items(), key=lambda x: x[1], reverse=True)}
@@ -189,33 +189,33 @@ def render_general_page1(t_1, n_max, n_min):
         return html.Div(render_graph(x, y, t='bar'))
     elif t_1 == 'Placements(pie)':
         nb_parties = sum(
-            [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
-        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
+            [x for x in df_stats_champs['nombre de pick'].values if not np.isnan(x)])
+        x = [d.replace('%', '') for d in df_top_champs.columns[1:-1]]
         y = [round(x)
-             for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+             for x in df_top_champs.loc['global'].values[1:-1]*nb_parties/100]
         return html.Div(
             render_graph(
                 x, y, titre='',
-                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}<br>, Placement moyen : {mean_position}"))
+                fig_title=f"Winrate global : {df_top_champs.loc['global']['winrate']}<br>, Placement moyen : {mean_position}"))
     elif t_1 == 'Placements(bar)':
         nb_parties = sum(
-            [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
-        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
+            [x for x in df_stats_champs['nombre de pick'].values if not np.isnan(x)])
+        x = [d.replace('%', '') for d in df_top_champs.columns[1:-1]]
         y = [round(x)
-             for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+             for x in df_top_champs.loc['global'].values[1:-1]*nb_parties/100]
         return html.Div(
             render_graph(
                 x, y, titre='', t='bar_g',
-                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}, Placement moyen : {mean_position}"))
+                fig_title=f"Winrate global : {df_top_champs.loc['global']['winrate']}, Placement moyen : {mean_position}"))
 
     else:
         key = graphs_generals[t_1]
         results = {}
         if key not in ['position moyenne', 'gain mmr', 'pickrate', '% top 1', 'winrate'] or n_min == None:
             n_min = 0
-        for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ][key]) and df_all.loc[champ]['nombre de pick'] >= n_min:
-                results[champ] = df_all.loc[champ][key]
+        for champ in df_stats_champs['nom']:
+            if not np.isnan(df_all_champ.loc[champ][key]) and df_all_champ.loc[champ]['nombre de pick'] >= n_min:
+                results[champ] = df_all_champ.loc[champ][key]
         sort_res = {k: v for k, v in sorted(results.items(
         ), key=lambda x: x[1], reverse=True if key not in ['position moyenne'] else False)}
         x = list(sort_res.keys())[:n_max]
@@ -245,10 +245,10 @@ def render_general_page1(t_1, n_max, n_min):
 
     elif t_1 == 'Top top 1(absolu)':
         results = {}
-        for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ]['nombre de pick']) and not np.isnan(df_all.loc[champ]['% top 1']):
+        for champ in df_stats_champs['nom']:
+            if not np.isnan(df_all_champ.loc[champ]['nombre de pick']) and not np.isnan(df_all_champ.loc[champ]['% top 1']):
                 results[champ] = round(
-                    df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['% top 1']/100)
+                    df_all_champ.loc[champ]['nombre de pick']*df_all_champ.loc[champ]['% top 1']/100)
         sort_res = {k: v for k, v in sorted(
             results.items(), key=lambda x: x[1], reverse=True)}
         x = list(sort_res.keys())[:n_max]
@@ -256,10 +256,10 @@ def render_general_page1(t_1, n_max, n_min):
         return html.Div(render_graph(x, y, t='bar'))
     elif t_1 == 'Top victoire(absolu)':
         results = {}
-        for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ]['nombre de pick']) and not np.isnan(df_all.loc[champ]['winrate']):
+        for champ in df_stats_champs['nom']:
+            if not np.isnan(df_all_champ.loc[champ]['nombre de pick']) and not np.isnan(df_all_champ.loc[champ]['winrate']):
                 results[champ] = round(
-                    df_all.loc[champ]['nombre de pick']*df_all.loc[champ]['winrate']/100)
+                    df_all_champ.loc[champ]['nombre de pick']*df_all_champ.loc[champ]['winrate']/100)
 
         sort_res = {k: v for k, v in sorted(
             results.items(), key=lambda x: x[1], reverse=True)}
@@ -268,33 +268,33 @@ def render_general_page1(t_1, n_max, n_min):
         return html.Div(render_graph(x, y, t='bar'))
     elif t_1 == 'Placements(pie)':
         nb_parties = sum(
-            [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
-        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
+            [x for x in df_stats_champs['nombre de pick'].values if not np.isnan(x)])
+        x = [d.replace('%', '') for d in df_top_champs.columns[1:-1]]
         y = [round(x)
-             for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+             for x in df_top_champs.loc['global'].values[1:-1]*nb_parties/100]
         return html.Div(
             render_graph(
                 x, y, titre='',
-                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}<br>, Placement moyen : {mean_position}"))
+                fig_title=f"Winrate global : {df_top_champs.loc['global']['winrate']}<br>, Placement moyen : {mean_position}"))
     elif t_1 == 'Placements(bar)':
         nb_parties = sum(
-            [x for x in df_stats['nombre de pick'].values if not np.isnan(x)])
-        x = [d.replace('%', '') for d in df_top.columns[1:-1]]
+            [x for x in df_stats_champs['nombre de pick'].values if not np.isnan(x)])
+        x = [d.replace('%', '') for d in df_top_champs.columns[1:-1]]
         y = [round(x)
-             for x in df_top.loc['global'].values[1:-1]*nb_parties/100]
+             for x in df_top_champs.loc['global'].values[1:-1]*nb_parties/100]
         return html.Div(
             render_graph(
                 x, y, titre='', t='bar_g',
-                fig_title=f"Winrate global : {df_top.loc['global']['winrate']}, Placement moyen : {mean_position}"))
+                fig_title=f"Winrate global : {df_top_champs.loc['global']['winrate']}, Placement moyen : {mean_position}"))
 
     else:
         key = graphs_generals[t_1]
         results = {}
         if key not in ['position moyenne', 'gain mmr', 'pickrate', '% top 1', 'winrate'] or n_min == None:
             n_min = 0
-        for champ in df_stats['nom']:
-            if not np.isnan(df_all.loc[champ][key]) and df_all.loc[champ]['nombre de pick'] >= n_min:
-                results[champ] = df_all.loc[champ][key]
+        for champ in df_stats_champs['nom']:
+            if not np.isnan(df_all_champ.loc[champ][key]) and df_all_champ.loc[champ]['nombre de pick'] >= n_min:
+                results[champ] = df_all_champ.loc[champ][key]
         sort_res = {k: v for k, v in sorted(results.items(
         ), key=lambda x: x[1], reverse=True if key not in ['position moyenne'] else False)}
         x = list(sort_res.keys())[:n_max]
@@ -305,35 +305,35 @@ def render_general_page1(t_1, n_max, n_min):
 def render_char_graph(char):
     if char == None:
         return html.Div('')
-    if char not in df_stats['nom'] or char not in df_top['nom'] or char not in all_matches.keys():
+    if char not in df_stats_champs['nom'] or char not in df_top_champs['nom'] or char not in all_matches_champs.keys():
         return html.Div('Pas de parties !')
     layout = html.Div([
         dbc.Row([
-                dbc.Col(render_graph(x=list(range(len(all_matches[char])+1)),
-                                     y=[0]+list(all_matches[char]
+                dbc.Col(render_graph(x=list(range(len(all_matches_champs[char])+1)),
+                                     y=[0]+list(all_matches_champs[char]
                                                 ['gain mmr total'].values),
                                      titre='Gain MMR total selon les matchs',
                                      t='scatter')),
-                dbc.Col(render_graph(x=[d.replace('%', '') for d in df_top.columns[1:-1]],
-                                     y=[round(x) for x in df_top.loc[char].values[1:-1]
-                                        * df_stats.loc[char]['nombre de pick']/100],
-                                     titre=f"Placements, winrate = {df_all.loc[char]['winrate']}%, position moyenne =  {df_all.loc[char]['position moyenne']}", t='bar_p'))
+                dbc.Col(render_graph(x=[d.replace('%', '') for d in df_top_champs.columns[1:-1]],
+                                     y=[round(x) for x in df_top_champs.loc[char].values[1:-1]
+                                        * df_stats_champs.loc[char]['nombre de pick']/100],
+                                     titre=f"Placements, winrate = {df_all_champ.loc[char]['winrate']}%, position moyenne =  {df_all_champ.loc[char]['position moyenne']}", t='bar_p'))
                 ]
                 ), dbc.Row([
                     dbc.Col(html.Div(dcc.Markdown(f'''
                                      # Stats générales
-                                     - **Nombre de Parties** : {df_all.loc[char]['nombre de pick']}
-                                     - **Winrate** : {df_all.loc[char]['winrate']}
-                                     - **Position moyenne** : {df_all.loc[char]['position moyenne']}
-                                     - **Pickrate** : {df_all.loc[char]['pickrate']}
-                                     - **Gain moyen de MMR** : {df_all.loc[char]['mmr moyen par partie']}
-                                     - **Gain relatif de MMR** : {df_all.loc[char]['gain mmr']}
-                                     - **Gain total de MMR** : {df_all.loc[char]['mmr total gagné']}
-                                     - **Perte total de MMR** : {df_all.loc[char]['mmr total perdu']}
-                                     - **Proposé dans % de parties** : {df_all.loc[char]['% proposé']}
+                                     - **Nombre de Parties** : {df_all_champ.loc[char]['nombre de pick']}
+                                     - **Winrate** : {df_all_champ.loc[char]['winrate']}
+                                     - **Position moyenne** : {df_all_champ.loc[char]['position moyenne']}
+                                     - **Pickrate** : {df_all_champ.loc[char]['pickrate']}
+                                     - **Gain moyen de MMR** : {df_all_champ.loc[char]['mmr moyen par partie']}
+                                     - **Gain relatif de MMR** : {df_all_champ.loc[char]['gain mmr']}
+                                     - **Gain total de MMR** : {df_all_champ.loc[char]['mmr total gagné']}
+                                     - **Perte total de MMR** : {df_all_champ.loc[char]['mmr total perdu']}
+                                     - **Proposé dans % de parties** : {df_all_champ.loc[char]['% proposé']}
                                      ''', className='md')), style={'textAlign': 'center', 'fontSize': '25px'}),
                     dbc.Col([html.H2('Dernieres parties'),
-                             df2table_simple(all_matches[char])]),
+                             df2table_simple(all_matches_champs[char])]),
 
                 ])])
 
@@ -419,7 +419,7 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
                Input('n_min', 'value')])
 def df2table(filter_columns, sort_by, n_min):
     n_min = 0 if not n_min else n_min
-    dataframe = df_all
+    dataframe = df_all_champ
     accepted_rows = list(dataframe['nom'].values)+['moyenne']
     accepted_cols = dataframe.columns if not filter_columns else filter_columns
     asc = ['position moyenne', 'mmr total perdu']
@@ -457,9 +457,9 @@ def render_comparison(filtre_col, sort_by, champs, compar_type):
                 'mmr total perdu', 'pickrate', 'nombre de pick',
                 '% top 1', '% top 2', '% top 3', '% top 4', '% top 5', '% top 6',
                 '% top 7', '% top 8']
-        dataframe = df_all[sort]
+        dataframe = df_all_champ[sort]
         accepted_rows = champs
-        accepted_cols = df_all.columns if not filtre_col else filtre_col
+        accepted_cols = df_all_champ.columns if not filtre_col else filtre_col
         asc = ['position moyenne', 'mmr total perdu']
         if sort_by != None:
             dataframe = dataframe.sort_values(
@@ -476,16 +476,16 @@ def render_comparison(filtre_col, sort_by, champs, compar_type):
             ])
         ], className='table')
     elif compar_type == 'graph':
-        gains_mmr = {champ: all_matches[champ]
+        gains_mmr = {champ: all_matches_champs[champ]
                      ['gain mmr total'].values for champ in champs}
         placement_moyen = {
-            champ: df_all.loc[champ]['position moyenne'] for champ in champs}
+            champ: df_all_champ.loc[champ]['position moyenne'] for champ in champs}
         placement_sorted = {k: v for k, v in sorted(
             placement_moyen.items(), key=lambda x: x[1], reverse=False)}
         placement_x = list(placement_sorted.keys())
         placement_y = list(placement_sorted.values())
         winrate = {
-            champ: df_all.loc[champ]['winrate'] for champ in champs}
+            champ: df_all_champ.loc[champ]['winrate'] for champ in champs}
         winrate_sorted = {k: v for k, v in sorted(
             winrate.items(), key=lambda x: x[1], reverse=True)}
         winrate_x = list(winrate_sorted.keys())

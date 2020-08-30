@@ -113,7 +113,7 @@ def extract_board(simulation_data):
     """
     minions = []
     for line in simulation_data:
-        minions.append(line.split('>>')[1].split('),')[0]+')')
+        minions.append(line.split('>>')[1])
     return minions
 
 
