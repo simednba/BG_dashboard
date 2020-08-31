@@ -4,6 +4,8 @@ from config import LOG_PATH, CSV_PATH, CSV_PATH_OLD
 import numpy as np
 from bg_logs_reader import parse_logs
 
+log2df = {'Aranna Starseeker': 'Aranna, Unleashed'}
+
 
 def df_to_dict(df, df_new):
     """
@@ -160,7 +162,9 @@ def process_log_data(log_data):
 def get_board_type(board):
     tags = {'t': 'taunt', 'd': 'divin', 'c': 'cleave',
             'g': 'gold', 'r': 'reborn', 'w': 'wind', 'p': 'poison'}
-    return np.random.choice(list(tags.values()), 1)[0]
+    possible = ['pirate', 'mech', 'murloc', 'dragon',
+                'big demon', 'token demon', 'beast', 'death', 'menagerie']
+    return np.random.choice(np.array(possible), 1)[0]
 
 
 def get_comp_types_stats(log_data):
@@ -209,10 +213,14 @@ def get_champ_stats_per_type(data):
     res = {}
     all_champs = [l['hero'] for l in data]
     for champ in all_champs:
+        if champ == '':
+            continue
         champ_data = [l for l in data if l['hero'] == champ]
         mmrs = [int(l['mmr'])-int(l['last_mmr']) for l in champ_data]
         mmrs = [mmr for mmr in mmrs if mmr < 120 and mmr > -100]
         pos = [l['pos'] for l in champ_data]
+        if champ in log2df:
+            champ = log2df[champ]
         res[champ] = {'mmr': np.sum(mmrs), 'pos': pos,
                       'nb_played': len(champ_data)}
     return res
@@ -349,8 +357,15 @@ def get_all_stats():
         [df_champ, df_top_n_champ.drop('nom', axis=1)], axis=1)
     battle_luck = [[l['luck'], int(
         l['pos'])] for l in log_data if l['luck'] != np.nan and l['pos'] != -1]
+    type_results = {}
+    for type_, type_data in comp_types.items():
+        type_results[type_] = [type_, round_(type_data['placement moyen'], 2), type_data['winrate']*100, round_(type_data['mean mmr'], 1),
+                               type_data['net mmr'], type_data['gain mmr absolu'], type_data['perte mmr absolu'],
+                               type_data['nombre de fois joué'], *[type_data[f'% top {i}'] for i in range(1, 9)], type_data['Nb victoire'], type_data['Nb top 1']]
+    df_types = pd.DataFrame.from_dict(type_results, orient='index', columns=['nom', 'position moyenne', 'winrate', 'mmr moyen par partie', 'net mmr',
+                                                                             'mmr total gagné', 'mmr total perdue', 'nombre de pick', *[f'% top {i}' for i in range(1, 9)], 'Victoires', 'Top 1'])
 
-    return (df_champ, df_top_n_champ, df_all_champ,
+    return (df_champ, df_top_n_champ, df_all_champ, df_types,
             all_matches_per_champ, mmr_evo, mean_position,
             cbt_winrate_champs, comp_types_per_champ, comp_types, battle_luck)
 
