@@ -1,58 +1,38 @@
 import pandas as pd
 from collections import Counter, defaultdict
-from config import LOG_PATH, CSV_PATH
+from config import LOG_PATH, CSV_PATH, CSV_PATH_OLD
 import numpy as np
 from bg_logs_reader import parse_logs
 
 
-def correct_csv(path):
-    with open(path, 'r') as f:
-        data = f.read()
-    data_splitted = data.split('\n')
-
-    to_change = np.where(np.array([d[0]
-                                   for d in data_splitted[:-1]]) == '"')[0]
-    assert len(to_change) < 20
-    new_data = []
-    new_data.append(data_splitted[0].replace('ï»¿', ''))
-    for idx in range(1, len(data_splitted)-1):
-        if idx in to_change:
-            line = data_splitted[idx]
-            date = line.split(',')[0].replace('"', '')
-            hero = line.split(',')[1].replace('"', '')
-            pos = line.split(',')[2].replace('"', '')
-            mmr = line.split(',')[3].replace('"', '')
-            minions = line.split('""')[7].replace('"', '')
-            turns = [l.replace('"', '') for l in line.split(',')[-8:-2]]
-            id_ = line.split(',')[-2].replace('"', '')
-            name = line.split(',')[-1].replace('"', '').replace(';', '')
-            line = ';'.join([date, hero, pos, mmr, minions, *turns, id_, name])
-        else:
-            line = data_splitted[idx]
-        new_data.append(line)
-
-    final_data = '\n'.join(new_data)
-
-    with open(path, 'w') as f:
-        f.write(final_data)
-
-
-def df_to_dict(df):
+def df_to_dict(df, df_new):
     """
     transform the dataframe in a dict
     we cannot use df.to_dict because the csv have different format in it
     """
     dics = []
-    for index, match_data in enumerate(df):
-        elements = match_data
-        i = 1 if elements[1] in['"Yogg-Saron',
-                                '"Aranna'] else 0  # names containing ','
-        hero = elements[1] if elements[1] != '"Aranna' else "Aranna, Unleashed"
-        dics.append({'date': elements[0],
-                     'hero': hero.replace('"', ''),
-                     'pos': str(elements[2+i]).replace('"', ''),
-                     'mmr': str(elements[3+i]).replace('"', '')
-                     })
+    if df is not None:
+        for index, match_data in enumerate(df):
+            elements = match_data
+            i = 1 if elements[1] in['"Yogg-Saron',
+                                    '"Aranna'] else 0  # names containing ','
+            hero = elements[1] if elements[1] != '"Aranna' else "Aranna, Unleashed"
+            dics.append({'date': elements[0],
+                         'hero': hero.replace('"', ''),
+                         'pos': str(elements[2+i]).replace('"', ''),
+                         'mmr': str(elements[3+i]).replace('"', '')
+                         })
+    if df_new is not None:
+        for index, match_data in enumerate(df_new):
+            elements = match_data[0].split(',')
+            i = 1 if elements[1] in['"Yogg-Saron',
+                                    '"Aranna'] else 0  # names containing ','
+            hero = elements[1] if elements[1] != '"Aranna' else "Aranna, Unleashed"
+            dics.append({'date': elements[0],
+                         'hero': hero.replace('"', ''),
+                         'pos': str(elements[2+i]).replace('"', ''),
+                         'mmr': str(elements[3+i]).replace('"', '')
+                         })
     return dics
 
 
@@ -202,7 +182,11 @@ def get_comp_types_stats(log_data):
         top_n = {k: v/sum(a for a in all_positions.values())
                  for k, v in all_positions.items()}
         for k, v in top_n.items():
-            subresults[f'% top {k}'] = round_(v)
+            subresults[f'% top {k}'] = round_(
+                v) if f'% top {k}' in subresults else 0
+        for i in range(1, 9):
+            if f'% top {i}' not in subresults:
+                subresults[f'% top {i}'] = 0
         subresults['winrate'] = round_(
             sum([v for k, v in top_n.items() if int(k) <= 4]))
         mmr_evo = [int(l['mmr'])-int(l['last_mmr']) for l in all_type_data]
@@ -216,8 +200,22 @@ def get_comp_types_stats(log_data):
         subresults['Nb victoire'] = round_(
             nb_played * subresults['winrate'], 0)
         subresults['Nb top 1'] = round_(nb_played * subresults['% top 1'], 0)
+        subresults['champs_stats'] = get_champ_stats_per_type(all_type_data)
         results[type_] = subresults
     return results
+
+
+def get_champ_stats_per_type(data):
+    res = {}
+    all_champs = [l['hero'] for l in data]
+    for champ in all_champs:
+        champ_data = [l for l in data if l['hero'] == champ]
+        mmrs = [int(l['mmr'])-int(l['last_mmr']) for l in champ_data]
+        mmrs = [mmr for mmr in mmrs if mmr < 120 and mmr > -100]
+        pos = [l['pos'] for l in champ_data]
+        res[champ] = {'mmr': np.sum(mmrs), 'pos': pos,
+                      'nb_played': len(champ_data)}
+    return res
 
 
 def get_cbt_winrate_per_champ(log_data):
@@ -255,24 +253,28 @@ def get_comp_types_per_champ(log_data):
     results = {}
     for champ in all_champs.keys():
         net_mmrs = {}
+        positions = {}
         if champ == '':
             continue
         all_champ_data = [l for l in log_data if l['hero'] == champ]
         all_types_played = Counter([l['comp_type'] for l in all_champ_data])
         for type_, nb_played in all_types_played.items():
             type_data = [l for l in all_champ_data if l['comp_type'] == type_]
+            pos = [l['pos'] for l in type_data]
             mmr_evo = [int(l['mmr'])-int(l['last_mmr']) for l in type_data]
             mmr_evo = [mmr for mmr in mmr_evo if mmr < 120 and mmr > -100]
+            positions[type_] = pos
             net_mmrs[type_] = np.sum(mmr_evo)
-        results[champ] = {'net_mmr': net_mmrs, 'types': all_types_played}
+        results[champ] = {'net_mmr': net_mmrs,
+                          'types': all_types_played, 'position': positions}
     return results
 
 
 def get_all_stats():
     # CSV data
-    correct_csv(CSV_PATH)
-    df_champ = pd.read_csv(CSV_PATH, sep=';').values
-    data = df_to_dict(df_champ)
+    df_champ_new = pd.read_csv(CSV_PATH, sep=';').values
+    df_champ = pd.read_csv(CSV_PATH_OLD, sep=';').values
+    data = df_to_dict(df_champ, df_champ_new)
     all_matches_per_champ = get_all_matches_per_champ(data)
     mmr_evo = get_all_mmr(data)
     champs_pos = get_all_position(data)
