@@ -3,8 +3,11 @@ from collections import Counter, defaultdict
 from config import LOG_PATH, CSV_PATH, CSV_PATH_OLD
 import numpy as np
 from bg_logs_reader import parse_logs
+import os
 
-log2df = {'Aranna Starseeker': 'Aranna, Unleashed'}
+log2df = {'Aranna Starseeker': 'Aranna, Unleashed',
+          'Yogg-Saron': "Yogg-Saron, Hope's End"}
+to_del = ['Brann Bronzebeard']
 
 
 def df_to_dict(df, df_new):
@@ -18,7 +21,13 @@ def df_to_dict(df, df_new):
             elements = match_data
             i = 1 if elements[1] in['"Yogg-Saron',
                                     '"Aranna'] else 0  # names containing ','
-            hero = elements[1] if elements[1] != '"Aranna' else "Aranna, Unleashed"
+            hero = elements[1]
+            if hero == '"Aranna':
+                hero = "Aranna, Unleashed"
+            elif hero == '"Yogg-Saron':
+                hero = "Yogg-Saron, Hope's End"
+            else:
+                hero = elements[1]
             dics.append({'date': elements[0],
                          'hero': hero.replace('"', ''),
                          'pos': str(elements[2+i]).replace('"', ''),
@@ -29,7 +38,11 @@ def df_to_dict(df, df_new):
             elements = match_data[0].split(',')
             i = 1 if elements[1] in['"Yogg-Saron',
                                     '"Aranna'] else 0  # names containing ','
-            hero = elements[1] if elements[1] != '"Aranna' else "Aranna, Unleashed"
+            hero = elements[1]
+            if hero == '"Aranna':
+                hero = "Aranna, Unleashed"
+            elif hero == '"Yogg-Saron':
+                hero = "Yogg-Saron, Hope's End"
             dics.append({'date': elements[0],
                          'hero': hero.replace('"', ''),
                          'pos': str(elements[2+i]).replace('"', ''),
@@ -109,13 +122,12 @@ def get_pickrate(log_data):
     picks = []
     for match in log_data:
         for hero in match['choices']:
-            choices.append(hero)
+            if hero is not 'None':
+                choices.append(hero)
         picks.append(match['hero'])
     choices, picks = Counter(choices), Counter(picks)
     results = {k: picks[k]/v for k, v in choices.items()}
     return results, choices
-
-# TODO : changer board pour board type
 
 
 def process_log_data(log_data):
@@ -160,11 +172,32 @@ def process_log_data(log_data):
 
 
 def get_board_type(board):
-    tags = {'t': 'taunt', 'd': 'divin', 'c': 'cleave',
-            'g': 'gold', 'r': 'reborn', 'w': 'wind', 'p': 'poison'}
+    if board == []:
+        return 'None'
+    df_tags = pd.read_csv(os.path.join(__file__.replace(
+        '\compute_stats.py', ''), 'types.csv'), sep=';')
+    noms = df_tags['nom'].values
+    possible_tags = {'d': 'divin',
+                     'r': 'death', }
     possible = ['pirate', 'mech', 'murloc', 'dragon',
-                'big demon', 'token demon', 'beast', 'death', 'menagerie']
-    return np.random.choice(np.array(possible), 1)[0]
+                'big demon', 'token demon', 'beast', 'death', 'menagerie', 'divin']
+    board_tags = []
+    for minion in board:
+        splitted = minion.split(',')
+        if len(splitted) <= 1:
+            continue
+        tags = splitted[2:]
+        for tag in tags:
+            if tag in possible_tags:
+                board_tags.append(possible_tags[tag])
+        name = splitted[0].split('(')[0]
+        df_data = df_tags.iloc[np.where(noms == name)[0]]
+        tags_idx = np.where(df_data.any().values[1:])[0]
+        for tag_idx in tags_idx:
+            board_tags.append(list(df_data.columns)[tag_idx+1])
+    c_tags = Counter(board_tags)
+    winner = c_tags.most_common()[0][0]
+    return winner
 
 
 def get_comp_types_stats(log_data):
@@ -187,14 +220,14 @@ def get_comp_types_stats(log_data):
                  for k, v in all_positions.items()}
         for k, v in top_n.items():
             subresults[f'% top {k}'] = round_(
-                v) if f'% top {k}' in subresults else 0
+                v)
         for i in range(1, 9):
             if f'% top {i}' not in subresults:
                 subresults[f'% top {i}'] = 0
         subresults['winrate'] = round_(
             sum([v for k, v in top_n.items() if int(k) <= 4]))
         mmr_evo = [int(l['mmr'])-int(l['last_mmr']) for l in all_type_data]
-        mmr_evo = [mmr for mmr in mmr_evo if mmr < 120 and mmr > -100]
+        mmr_evo = [mmr for mmr in mmr_evo if mmr < 120 and mmr > -120]
         subresults['net mmr'] = sum(mmr_evo)
         subresults['gain mmr absolu'] = sum([m for m in mmr_evo if m > 0])
         subresults['perte mmr absolu'] = sum([-m for m in mmr_evo if m < 0])
@@ -217,10 +250,8 @@ def get_champ_stats_per_type(data):
             continue
         champ_data = [l for l in data if l['hero'] == champ]
         mmrs = [int(l['mmr'])-int(l['last_mmr']) for l in champ_data]
-        mmrs = [mmr for mmr in mmrs if mmr < 120 and mmr > -100]
+        mmrs = [mmr for mmr in mmrs if mmr < 120 and mmr > -120]
         pos = [l['pos'] for l in champ_data]
-        if champ in log2df:
-            champ = log2df[champ]
         res[champ] = {'mmr': np.sum(mmrs), 'pos': pos,
                       'nb_played': len(champ_data)}
     return res
@@ -251,6 +282,10 @@ def get_cbt_winrate(data):
         else:
             champ_winrates.append(
                 100*turn_results['win']/(turn_results['loss']+turn_results['win']))
+    if max(champ_winrates) == 0:
+        return champ_winrates
+    while champ_winrates[-1] == 0:
+        del champ_winrates[-1]
     return champ_winrates
 
 
@@ -270,12 +305,28 @@ def get_comp_types_per_champ(log_data):
             type_data = [l for l in all_champ_data if l['comp_type'] == type_]
             pos = [l['pos'] for l in type_data]
             mmr_evo = [int(l['mmr'])-int(l['last_mmr']) for l in type_data]
-            mmr_evo = [mmr for mmr in mmr_evo if mmr < 120 and mmr > -100]
+            mmr_evo = [mmr for mmr in mmr_evo if mmr < 120 and mmr > -120]
             positions[type_] = pos
             net_mmrs[type_] = np.sum(mmr_evo)
         results[champ] = {'net_mmr': net_mmrs,
                           'types': all_types_played, 'position': positions}
     return results
+
+
+def match_log_to_df(log_data, df_data):
+    results = []
+    for log in log_data:
+        hero = log['hero']
+        mmr = int(log['new_mmr'])
+        matched = [d for d in df_data if d['hero']
+                   == hero and int(d['mmr']) == mmr]
+        if len(matched) > 0:
+            results.append([log, matched[0]])
+    return results
+
+
+all_dfs = [d[1] for d in results]
+not_matched = [d for d in df_data if d not in all_dfs]
 
 
 def get_all_stats():
@@ -284,6 +335,7 @@ def get_all_stats():
     df_champ = pd.read_csv(CSV_PATH_OLD, sep=';').values
     data = df_to_dict(df_champ, df_champ_new)
     all_matches_per_champ = get_all_matches_per_champ(data)
+    all_heros = list(all_matches_per_champ.keys())
     mmr_evo = get_all_mmr(data)
     champs_pos = get_all_position(data)
     mean_position = round_(
@@ -305,9 +357,9 @@ def get_all_stats():
     percent_proposed = {k: v/len(log_data) for k, v in nb_proposed.items()}
     log_data = process_log_data(log_data)
     cbt_winrate_champs = get_cbt_winrate_per_champ(log_data)
-    comp_types = get_comp_types_stats(log_data)
-    comp_types_per_champ = get_comp_types_per_champ(log_data)
-    all_heros = pickrate.keys()
+    data_wo_none = [l for l in log_data if l['comp_type'] != 'None']
+    comp_types = get_comp_types_stats(data_wo_none)
+    comp_types_per_champ = get_comp_types_per_champ(data_wo_none)
     results = defaultdict(list)
     for hero in all_heros:
         if hero not in champ_mean_pos:

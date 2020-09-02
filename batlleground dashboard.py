@@ -316,7 +316,7 @@ def render_type_page(choice):
                                      titre=f"Combat winrate",
                                      t='scatter')),
                 dbc.Col(render_graph(x=list(data['champs_stats'].keys()),
-                                     y=[d['nb_played']/data['nombre de pick']
+                                     y=[d['nb_played']/data['nombre de fois joué']
                                          for d in data['champs_stats'].values()],
                                      titre='Repartition des persos',
                                      t='pie_p',
@@ -487,6 +487,8 @@ def render_general_page(t_1, n_max, n_min):
         name_df = df_stats_champs if not'comps' in t_1 else df_types
         n_max = n_max if not'comps' in t_1 else 10
         for champ in name_df['nom']:
+            if champ == 'None':
+                continue
             if not np.isnan(df.loc[champ][key]) and df.loc[champ]['nombre de pick'] >= n_min:
                 results[champ] = df.loc[champ][key]
         sort_res = {k: v for k, v in sorted(results.items(
@@ -523,6 +525,7 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
     # Bar graphs with images
     elif t == 'bar':
         char = x[0]
+
         if char in imgs:
             images = get_img_dict([imgs[char] for char in x])
         else:

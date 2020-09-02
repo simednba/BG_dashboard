@@ -4,6 +4,9 @@ Created on Thu Mar 12 18:52:36 2020
 @author: simed
 """
 import os
+log2df = {'Aranna Starseeker': 'Aranna, Unleashed',
+          'Yogg-Saron': "Yogg-Saron, Hope's End"}
+heros_to_del = ['Brann Bronzebeard']
 
 
 def extract_logs(path):
@@ -97,12 +100,21 @@ def extract_game_choices_and_pick(messages):
             hero = line.split(',')[2].split('=')[1]
             if 'NOOOOOO' in hero:
                 hero = 'Illidan Stormrage'
+            if hero in log2df:
+                hero = log2df[hero]
+            if hero in heros_to_del:
+                hero = 'None'
             results['choices'].append(hero)
         if 'Player.Play' in line:
             hero = line.split(',')[2].split('=')[1]
             if 'NOOOOOO' in hero:
                 hero = 'Illidan Stormrage'
+            if hero in log2df:
+                hero = log2df[hero]
+            if hero in heros_to_del:
+                hero = 'None'
             results['hero'] = hero
+
             break
     return results
 
@@ -149,7 +161,9 @@ def extract_turn_info(turn_data):
         winrates = []
     if cbt_result:
         winner = turn_data[cbt_result].split(
-            '>>')[1].split(',')[0].split('=')[1]
+            '>>')[1].split(',')[0].split('=')[1].strip()
+        if winner in log2df:
+            winner = log2df[winner]
     else:
         if start_sim:
             winner = 'Tie'
