@@ -1,6 +1,10 @@
 import pandas as pd
 from collections import Counter, defaultdict
-from config import LOG_PATH, CSV_PATH, CSV_PATH_OLD
+from config import LOG_PATH, CSV_PATH
+try:
+    from config import CSV_PATH_OLD
+except:
+    CSV_PATH_OLD = None
 import numpy as np
 from bg_logs_reader import parse_logs
 import os
@@ -313,26 +317,24 @@ def get_comp_types_per_champ(log_data):
     return results
 
 
-def match_log_to_df(log_data, df_data):
+def reorder_logs(log_data, df_data):
     results = []
-    for log in log_data:
-        hero = log['hero']
-        mmr = int(log['new_mmr'])
-        matched = [d for d in df_data if d['hero']
-                   == hero and int(d['mmr']) == mmr]
-        if len(matched) > 0:
-            results.append([log, matched[0]])
+    log_data = [l for l in log_data if l['comp_type'] != 'None']
+    for match in df_data:
+        hero = match['hero']
+        mmr = int(match['mmr'])
+        log_match = [l for l in log_data if l['hero']
+                     == hero and int(l['mmr']) == mmr]
+        if len(log_match) > 0:
+            results.append(log_match[0])
     return results
-
-
-all_dfs = [d[1] for d in results]
-not_matched = [d for d in df_data if d not in all_dfs]
 
 
 def get_all_stats():
     # CSV data
     df_champ_new = pd.read_csv(CSV_PATH, sep=';').values
-    df_champ = pd.read_csv(CSV_PATH_OLD, sep=';').values
+    df_champ = pd.read_csv(
+        CSV_PATH_OLD, sep=';').values if CSV_PATH_OLD else None
     data = df_to_dict(df_champ, df_champ_new)
     all_matches_per_champ = get_all_matches_per_champ(data)
     all_heros = list(all_matches_per_champ.keys())
@@ -357,9 +359,9 @@ def get_all_stats():
     percent_proposed = {k: v/len(log_data) for k, v in nb_proposed.items()}
     log_data = process_log_data(log_data)
     cbt_winrate_champs = get_cbt_winrate_per_champ(log_data)
-    data_wo_none = [l for l in log_data if l['comp_type'] != 'None']
-    comp_types = get_comp_types_stats(data_wo_none)
-    comp_types_per_champ = get_comp_types_per_champ(data_wo_none)
+    log_data = reorder_logs(log_data, data)
+    comp_types = get_comp_types_stats(log_data)
+    comp_types_per_champ = get_comp_types_per_champ(log_data)
     results = defaultdict(list)
     for hero in all_heros:
         if hero not in champ_mean_pos:
@@ -414,8 +416,8 @@ def get_all_stats():
         type_results[type_] = [type_, round_(type_data['placement moyen'], 2), type_data['winrate']*100, round_(type_data['mean mmr'], 1),
                                type_data['net mmr'], type_data['gain mmr absolu'], type_data['perte mmr absolu'],
                                type_data['nombre de fois joué'], *[type_data[f'% top {i}'] for i in range(1, 9)], type_data['Nb victoire'], type_data['Nb top 1']]
-    df_types = pd.DataFrame.from_dict(type_results, orient='index', columns=['nom', 'position moyenne', 'winrate', 'mmr moyen par partie', 'net mmr',
-                                                                             'mmr total gagné', 'mmr total perdue', 'nombre de pick', *[f'% top {i}' for i in range(1, 9)], 'Victoires', 'Top 1'])
+    df_types = pd.DataFrame.from_dict(type_results, orient='index', columns=['nom', 'position moyenne', 'winrate', 'mmr moyen par partie', 'gain mmr',
+                                                                             'mmr total gagné', 'mmr total perdu', 'nombre de pick', *[f'% top {i}' for i in range(1, 9)], 'Victoires', 'Top 1'])
 
     return (df_champ, df_top_n_champ, df_all_champ, df_types,
             all_matches_per_champ, mmr_evo, mean_position,

@@ -138,7 +138,11 @@ def render_content(tab):
                          html.H2('sort by'), dcc.Dropdown(id='sort',
                                                           options=[{'label': v, 'value': v} for v in df_all_champ.columns]),
                          html.H2('Nombre de pick mini'),
-                         dcc.Input(id='n_min', type="number", value=1)], width=3),
+                         dcc.Input(id='n_min', type="number", value=1),
+                         dcc.RadioItems(id='table_type', options=[
+                             {'label': 'champions', 'value': 'champs'},
+                             {'label': 'compositions', 'value': 'comps'}
+                         ], value='champs')], width=3),
                 dbc.Col(html.Div(id='content_table'), width=9)])])
     elif tab == 'solo':
         return html.Div([dcc.Dropdown(id='choix_perso',
@@ -146,7 +150,7 @@ def render_content(tab):
                          html.Div(id='graph_char')])
     elif tab == 'comps':
         return html.Div([dcc.Dropdown(id='choix_type',
-                                      options=[{'label': k, 'value': k} for k in ['general']+list(df_types['nom'].values)]),
+                                      options=[{'label': k, 'value': k} for k in list(df_types['nom'].values)]),
                          html.Div(id='graph_type')])
 
     elif tab == 'compar':
@@ -190,16 +194,29 @@ def render_char_graph(char):
         return html.Div('')
     if char not in df_stats_champs['nom'] or char not in df_top_champs['nom'] or char not in all_matches_champs.keys():
         return html.Div('Pas de parties !')
-    all_types_mmr = np.array(
-        list(comp_types_per_champ[char]['net_mmr'].keys()))
-    all_types_pos = np.array(
-        list(comp_types_per_champ[char]['position'].keys()))
-    net_mmr_per_type = np.array(
-        list(comp_types_per_champ[char]['net_mmr'].values()))
-    mean_pos_per_type = np.array([round_(np.mean([int(a) for a in v]), 2)
-                                  for k, v in comp_types_per_champ[char]['position'].items()])
-    sorted_idx_mmr = np.argsort(-net_mmr_per_type)
-    sorted_idx_pos = np.argsort(mean_pos_per_type)
+    if char in comp_types_per_champ:
+        all_types_mmr = np.array(
+            list(comp_types_per_champ[char]['net_mmr'].keys()))
+        all_types_pos = np.array(
+            list(comp_types_per_champ[char]['position'].keys()))
+        net_mmr_per_type = np.array(
+            list(comp_types_per_champ[char]['net_mmr'].values()))
+        mean_pos_per_type = np.array([round_(np.mean([int(a) for a in v]), 2)
+                                      for k, v in comp_types_per_champ[char]['position'].items()])
+        sorted_idx_mmr = np.argsort(-net_mmr_per_type)
+        sorted_idx_pos = np.argsort(mean_pos_per_type)
+        x_net_mmr = np.take_along_axis(all_types_mmr, sorted_idx_mmr, axis=0)
+        y_net_mmr = np.take_along_axis(
+            net_mmr_per_type, sorted_idx_mmr, axis=0)
+        x_pos = np.take_along_axis(all_types_pos, sorted_idx_pos, axis=0)
+        y_pos = np.take_along_axis(mean_pos_per_type, sorted_idx_pos, axis=0)
+        x_pie = list(comp_types_per_champ[char]['types'].keys())
+        y_pie = list(comp_types_per_champ[char]['types'].values())
+        x_wr = list(range(len(cbt_winrate_champs[char])+1))
+        y_wr = list(cbt_winrate_champs[char])
+    else:
+        x_net_mmr, y_net_mmr, x_pos, y_pos = [], [], [], []
+        x_pie, y_pie, x_wr, y_wr = [], [], [], []
     layout = html.Div([
         dbc.Row([
                 dbc.Col(render_graph(x=list(range(len(all_matches_champs[char])+1)),
@@ -213,29 +230,26 @@ def render_char_graph(char):
                                      titre=f"winrate = {df_all_champ.loc[char]['winrate']}%, position moyenne =  {df_all_champ.loc[char]['position moyenne']}", t='bar_p'))
                 ]
                 ), dbc.Row([
-                    dbc.Col(render_graph(x=list(range(len(cbt_winrate_champs[char])+1)),
-                                         y=list(cbt_winrate_champs[char]),
+                    dbc.Col(render_graph(x=x_wr,
+                                         y=y_wr,
                                          titre=f"Combat winrate",
                                          t='scatter')),
 
-                    dbc.Col(render_graph(x=list(comp_types_per_champ[char]['types'].keys()),
-                                         y=list(
-                                             comp_types_per_champ[char]['types'].values()),
+                    dbc.Col(render_graph(x=x_pie,
+                                         y=y_pie,
                                          titre='Type de compositions joués',
                                          t='pie_p'
                                          )),
 
                 ]), dbc.Row([
-                    dbc.Col(render_graph(x=np.take_along_axis(all_types_mmr, sorted_idx_mmr, axis=0),
-                                         y=np.take_along_axis(
-                                             net_mmr_per_type, sorted_idx_mmr, axis=0),
+                    dbc.Col(render_graph(x=x_net_mmr,
+                                         y=y_net_mmr,
                                          titre='Net mmr par type',
                                          t='bar'
 
                                          )),
-                    dbc.Col(render_graph(x=np.take_along_axis(all_types_pos, sorted_idx_pos, axis=0),
-                                         y=np.take_along_axis(
-                                             mean_pos_per_type, sorted_idx_pos, axis=0),
+                    dbc.Col(render_graph(x=x_pos,
+                                         y=y_pos,
                                          titre='Mean position par type',
                                          t='bar'
 
@@ -254,19 +268,26 @@ def render_char_graph(char):
 @app.callback(Output('content_table', 'children'),
               [Input('filtre_col', 'value'),
                Input('sort', 'value'),
-               Input('n_min', 'value')])
-def df2table(filter_columns, sort_by, n_min):
+               Input('n_min', 'value'),
+               Input('table_type', 'value')])
+def df2table(filter_columns, sort_by, n_min, table_type):
     n_min = 0 if not n_min else n_min
-    dataframe = df_all_champ
-    accepted_rows = list(dataframe['nom'].values)+['moyenne']
-    accepted_cols = dataframe.columns if not filter_columns else filter_columns
-    asc = ['position moyenne', 'mmr total perdu']
-    ordered_columns = ['nom', 'position moyenne', 'winrate', 'mmr moyen par partie',  'gain mmr', 'mmr total gagné',
-                       'mmr total perdu', 'pickrate', 'nombre de pick',
-                       '% top 1', '% top 2', '% top 3', '% top 4', '% top 5', '% top 6',
-                       '% top 7', '% top 8', 'nombre de fois proposé', '% de parties', '% proposé']
-    dataframe = dataframe[ordered_columns]
-    if sort_by != None:
+    if table_type == 'champs':
+        dataframe = df_all_champ
+        accepted_rows = list(dataframe['nom'].values)+['moyenne']
+        accepted_cols = dataframe.columns if not filter_columns else filter_columns
+        asc = ['position moyenne', 'mmr total perdu']
+        ordered_columns = ['nom', 'position moyenne', 'winrate', 'mmr moyen par partie',  'gain mmr', 'mmr total gagné',
+                           'mmr total perdu', 'pickrate', 'nombre de pick',
+                           '% top 1', '% top 2', '% top 3', '% top 4', '% top 5', '% top 6',
+                           '% top 7', '% top 8', 'nombre de fois proposé', '% de parties', '% proposé']
+        dataframe = dataframe[ordered_columns]
+    else:
+        dataframe = df_types
+        accepted_rows = list(dataframe['nom'].values)
+        accepted_cols = dataframe.columns
+        asc = ['position moyenne', 'mmr total perdu']
+    if sort_by != None and sort_by in dataframe.columns:
         dataframe = dataframe.sort_values(
             sort_by, ascending=False if sort_by not in asc else True)
     return html.Table([
@@ -286,8 +307,6 @@ def df2table(filter_columns, sort_by, n_min):
 def render_type_page(choice):
     if choice is None:
         return 'Selectionnez un type dans la liste ci dessus'
-    if choice == 'general':
-        return df2table_simple(df_types)
     else:
         data = comp_types[choice]
         all_champs = np.array(list(data['champs_stats'].keys()))
@@ -406,7 +425,7 @@ def render_comparison(filtre_col, sort_by, champs, compar_type):
                                                           t='bar_c', fig_title='Winrate')]),
                 dbc.Col(dcc.Graph(
                     id='compar_mmr',
-                    figure=go.Figure(data=[go.Scatter(name=champ, y=[0]+cbt_winrate_champs[champ], x=[*range(len(cbt_winrate_champs[champ])+1)]) for champ in champs],
+                    figure=go.Figure(data=[go.Scatter(name=champ, y=[0]+cbt_winrate_champs[champ], x=[*range(len(cbt_winrate_champs[champ])+1)]) for champ in champs if champ in cbt_winrate_champs],
                                      layout=go.Layout(title=go.layout.Title(
                                          text=' <b>Combat winrate</b>'))
 
@@ -431,7 +450,7 @@ def render_general_page(t_1, n_max, n_min):
                              layout={'margin': {'t': 0, 'l': 0}}))
     elif t_1 == 'Compositions':
         return render_graph(x=df_types['nom'].values,
-                            y=df_types['Nb de fois joué'].values,
+                            y=df_types['nombre de pick'].values,
                             titre='Compositions jouées',
                             t='pie')
     elif t_1 == 'Top top 1(champions)':
@@ -500,6 +519,8 @@ def render_general_page(t_1, n_max, n_min):
 
 def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
     # General pie
+    if x == [] and y == []:
+        return 'Pas assez de datas'
     if t == 'pie':
         colors = ['#2ED9FF', '#17BECF', '#00B5F7', '#2E91E5',
                   '#FBE426', '#FEAF16', '#FD3216', '#DC3912']
@@ -529,7 +550,8 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
         if char in imgs:
             images = get_img_dict([imgs[char] for char in x])
         else:
-            images = get_img_dict([imgs_types[t] for t in x])
+            images = get_img_dict([imgs_types[t]
+                                   for t in x], sizes=[0.25, 0.5])
         return html.Div(style={'height': '90vh'}, children=[
             html.H2(titre),
             dcc.Graph(style={'height': 'inherit'}, figure=go.Figure(data=[go.Bar(x=y, text=y, textposition='auto', orientation='h')],
@@ -589,13 +611,14 @@ def df2table_simple(dataframe):
     ], className='table')
 
 
-def get_img_dict(images):
+def get_img_dict(images, sizes=[0.5, 0.8]):
+    sx, sy = sizes
     return [{'source': img,
              'layer': 'below',
              'x': 1,
              'y': i-0.3,
-             'sizex': 0.5,
-             'sizey': 0.8,
+             'sizex': sx,
+             'sizey': sy,
              'xref': 'paper',
              'yref': 'y',
              } for i, img in enumerate(images)]
