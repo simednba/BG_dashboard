@@ -1,163 +1,108 @@
-nom;beast;divin;menagerie;dragon;big demon;token demon;pirate;murloc;death;mech
- Sneed's Old Shredder ;0;0;0;0;0;0;0;0;0;1
- Cave Hydra ;1;0;0;0;0;0;0;0;0;0
- Savannah Highmane ;1;0;0;0;0;0;0;0;0;0
- Ghastcoiler ;1;0;0;0;0;0;0;0;0;0
- Mama Bear ;1;0;0;0;0;0;0;0;0;0
- Imprisoner ;0;0;0;0;0;1;0;0;0;0
- Ironhide Direhorn ;1;0;0;0;0;0;0;0;0;0
- Imp Mama ;0;0;0;0;0;1;0;0;0;0
- Imp Gang Boss ;0;0;0;0;0;1;0;0;0;0
- Brann Bronzebeard ;0;0;1;0;0;0;0;0;0;0
- Menagerie Jug ;0;0;1;0;0;0;0;0;0;0
- Soul Juggler ;0;0;0;0;0;1;0;0;0;0
- Kaboom Bot ;0;0;0;0;0;0;0;0;0;1
- Deflect-o-Bot ;0;0;0;0;0;0;0;0;0;1
- Cobalt Scalebane ;0;0;0;1;0;0;0;0;0;0
- Security Rover ;0;0;0;0;0;0;0;0;0;1
- Harvest Golem ;0;0;0;0;0;0;0;0;0;1
- Monstrous Macaw ;1;0;0;0;0;0;0;0;0;0
- Goldrinn;1;0;0;0;0;0;0;0;0;0
- Amalgadon ;1;1;1;1;1;0;1;1;0;1
- Rat Pack ;1;0;0;0;0;0;0;0;0;0
- Baron Rivendare ;0;0;0;0;0;0;0;0;1;0
- Selfless Hero ;0;1;0;0;0;0;0;0;0;0
- Glyph Guardian ;0;0;0;1;0;0;0;0;0;0
- Goldgrubber ;0;0;0;0;0;0;1;0;0;0
- Annoy-o-Module ;0;0;0;0;0;0;0;0;0;1
- Foe Reaper 4000 ;0;0;0;0;0;0;0;0;0;1
- Spawn of N'Zoth ;0;0;0;0;0;0;0;0;0;0
- Mecharoo ;0;0;0;0;0;0;0;0;0;1
- Alleycat ;1;0;0;0;0;0;0;0;0;0
- Rabid Saurolisk ;1;0;0;0;0;0;0;0;0;0
- Unstable Ghoul ;0;0;0;0;0;0;0;0;0;0
- Infested Wolf ;1;0;0;0;0;0;0;0;0;0
- Bronze Warden ;0;0;0;1;0;0;0;0;0;0
- Tabbycat ;1;0;0;0;0;0;0;0;0;0
- Bolvar;0;0;0;0;0;0;0;0;0;0
- Amalgam ;1;1;1;1;1;1;1;1;0;1
- Khadgar ;0;0;0;0;0;0;0;0;0;0
- Micro Machine ;0;0;0;0;0;0;0;0;0;1
- Annihilan Battlemaster ;0;0;0;0;1;0;0;0;0;0
- Metaltooth Leaper ;0;0;0;0;0;0;0;0;0;1
- Mechano-Egg ;0;0;0;0;0;0;0;0;0;1
- Seabreaker Goliath ;0;0;0;0;0;0;1;0;0;0
- Crowd Favorite ;0;0;0;0;0;0;0;0;0;0
- Murloc Warleader ;0;0;0;0;0;0;0;1;0;0
- Junkbot ;0;0;0;0;0;0;0;0;0;1
- Drakonid Enforcer ;0;1;0;1;0;0;0;0;0;0
- Kangor's Apprentice ;0;0;0;0;0;0;0;0;0;1
- Righteous Protector ;0;0;0;0;0;0;0;0;0;0
- Lightfang Enforcer ;0;0;1;0;0;0;0;0;0;0
- The Tide Razor ;0;0;0;1;0;0;0;0;0;0
- Dread Admiral Eliza ;0;0;0;0;0;0;1;0;0;0
- Southsea Captain ;0;0;0;0;0;0;1;0;0;0
- Ripsnarl Captain ;0;0;0;0;0;0;1;0;0;0
- Maexxna ;1;0;0;0;0;0;0;0;0;0
- Virmen Sensei ;1;0;1;0;0;0;0;0;0;0
- Pack Leader ;1;0;0;0;0;0;0;0;0;0
- holymackerel ;0;0;0;0;0;0;0;1;0;1
- deflectobot ;0;0;0;0;0;0;0;0;0;1
- selflesshero ;0;1;0;0;0;0;0;0;0;0
- kaboombot ;0;0;0;0;0;0;0;0;0;1
- ironsensei ;0;0;0;0;0;0;0;0;0;1
- metaltoothleaper ;0;0;0;0;0;0;0;0;0;1
- hangrydragon ;0;0;0;1;0;0;0;0;0;0
- lightfangenforcer ;0;0;1;0;0;0;0;0;0;0
- mechanoegg ;0;0;0;0;0;0;0;0;0;1
- annihilanbattlemaster ;0;0;0;0;1;0;0;0;0;0
- spawnofnzoth ;0;0;0;0;0;0;0;0;0;0
- imprisoner ;0;0;0;0;0;1;0;0;0;0
- rabidsaurolisk ;1;0;0;0;0;0;0;0;0;0
- wrathweaver ;0;0;0;0;1;1;0;0;0;0
- fiendishservant ;0;0;0;0;0;1;0;0;0;0
- cavehydra ;1;0;0;0;0;0;0;0;0;0
- ironhidedirehorn ;1;0;0;0;0;0;0;0;0;0
- impmama ;0;0;0;0;0;1;0;0;0;0
- glyphguardian ;0;0;0;1;0;0;0;0;0;0
- dragonspawnlieutenant ;0;0;0;1;0;0;0;0;0;0
- murloctidecaller ;0;0;0;0;0;0;0;1;0;0
- bronzewarden ;0;0;0;1;0;0;0;0;0;0
- crowdfavorite ;0;0;0;0;0;0;0;0;0;0
- zappslywick ;0;0;0;0;0;0;0;0;0;0
- brannbronzebeard ;0;0;1;0;0;0;0;0;0;0
- foereaper4000 ;0;0;0;0;0;0;0;0;0;1
- harvestgolem ;0;0;0;0;0;0;0;0;0;1
- floatingwatcher ;0;0;0;0;1;0;0;0;0;0
- voidlord ;0;0;0;0;0;1;0;0;0;0
- savannahhighmane ;1;0;0;0;0;0;0;0;0;0
- mamabear ;1;0;0;0;0;0;0;0;0;0
- zoobot ;0;0;0;0;0;0;0;0;0;0
- screwjankclunker ;0;0;1;0;0;0;0;0;0;0
- rockpoolhunter ;0;0;0;0;0;0;0;1;0;0
- amalgam ;1;1;1;1;1;1;1;1;0;1
- nadinathered ;0;0;1;1;0;0;0;0;0;0
- razorgoretheuntamed ;0;0;0;1;0;0;0;0;0;0
- heraldofflame ;0;0;0;1;0;0;0;0;0;0
- kalecgosarcaneaspect ;0;0;0;1;0;0;0;0;0;0
- cobaltscalebane ;0;0;0;1;0;0;0;0;0;0
- goldrinnthegreatwolf ;1;0;0;0;0;0;0;0;0;0
- ghastcoiler ;1;0;0;0;0;0;0;0;0;0
- ratpack ;1;0;0;0;0;0;0;0;0;0
- kindlygrandmother ;1;0;0;0;0;0;0;0;0;0
- baronrivendare ;0;0;0;0;0;0;0;0;1;0
- malganis ;0;0;0;0;1;0;0;0;0;0
- souljuggler ;0;0;0;0;0;1;0;0;0;0
- impgangboss ;0;0;0;0;0;1;0;0;0;0
- nathrezimoverseer ;0;0;0;0;0;0;0;0;0;0
- strongshellscavenger ;0;0;1;0;0;0;0;0;0;0
- infestedwolf ;1;0;0;0;0;0;0;0;0;0
- packleader ;1;0;0;0;0;0;0;0;0;0
- bolvarfireblood ;0;0;0;0;0;0;0;0;0;0
- securityrover ;0;0;0;0;0;0;0;0;0;1
- pilotedshredder ;0;0;0;0;0;0;0;0;0;1
- oldmurkeye ;0;0;0;0;0;0;0;1;0;0
- murloctidehunter ;0;0;0;0;0;0;0;1;0;0
- felfinnavigator ;0;0;0;0;0;0;0;1;0;0
- murlocwarleader ;0;0;0;0;0;0;0;1;0;0
- maexxna ;1;0;0;0;0;0;0;0;0;0
- mecharoo ;0;0;0;0;0;0;0;0;0;1
- twilightemissary ;0;0;0;1;0;0;0;0;0;0
- waxridertogwaggle ;0;0;0;1;0;0;0;0;0;0
- khadgar ;0;0;0;0;0;0;0;0;0;0
- Murloc Tidehunter ;0;0;0;0;0;0;0;1;0;0
- Herald of Flame ;0;0;0;1;0;0;0;0;0;0
- Floating Watcher ;0;0;0;0;1;0;0;0;0;0
- Wrath Weaver ;0;0;0;0;1;0;0;0;0;0
- Hangry Dragon ;0;0;0;1;0;0;0;0;0;0
- Razorgore;0;0;0;1;0;0;0;0;0;0
- Waxrider Togwaggle ;0;0;0;1;0;0;0;0;0;0
- Salty Looter ;0;0;0;0;0;0;1;0;0;0
- Cap'n Hoggarr ;0;0;0;0;0;0;1;0;0;0
- Nat Pagle;0;0;0;0;0;0;1;0;0;0
- Screwjank Clunker ;0;0;0;0;0;0;0;1;0;0
- Iron Sensei ;0;0;0;0;0;0;0;0;0;1
- Steward of Time ;0;0;0;1;0;0;0;0;0;0
- Twilight Emissary ;0;0;0;1;0;0;0;0;0;0
- Scallywag ;0;0;0;0;0;0;1;0;0;0
- Arcane Cannon ;0;0;0;0;0;0;1;0;0;0
- Southsea Strongarm ;0;0;0;0;0;0;1;0;0;0
- Yo-Ho-Ogre ;0;0;0;0;0;0;1;0;0;0
- Primalfin Lookout ;0;0;0;0;0;0;0;1;0;0
- Felfin Navigator ;0;0;0;0;0;0;0;1;0;0
- Coldlight Seer ;0;0;0;0;0;0;0;1;0;0
- Voidlord ;0;0;0;0;0;1;0;0;0;0
- Mal'Ganis ;0;0;0;0;1;0;0;0;0;0
- Zoobot ;0;0;0;0;0;0;0;0;0;0
- Zapp Slywick ;0;0;0;0;0;0;0;0;0;0
- Old Murk-Eye ;0;0;0;0;0;0;0;1;0;0
- Kalecgos;0;0;0;1;0;0;0;0;0;0
- Siegebreaker ;0;0;0;0;1;1;0;0;0;0
- Scavenging Hyena ;1;0;0;0;0;0;0;0;0;0
- Fiendish Servant ;0;0;0;0;0;1;0;0;0;0
- Vulgar Homunculus ;0;0;0;0;0;1;0;0;0;0
- Nathrezim Overseer ;0;0;0;0;0;0;0;0;0;0
- Murloc Tidecaller ;0;0;0;0;0;0;0;1;0;0
- Nadina the Red ;0;0;0;1;0;0;0;0;0;0
- Dragonspawn Lieutenant ;0;0;0;1;0;0;0;0;0;0
- Kindly Grandmother ;1;0;0;0;0;0;0;0;0;0
- Pogo-Hopper ;0;0;0;0;0;0;0;0;0;1
- Crystalweaver ;0;0;0;0;0;0;0;0;0;0
- Rockpool Hunter ;0;0;0;0;0;0;0;1;0;0
- King Bagurgle ;0;0;0;0;0;0;0;1;0;0
- Piloted Shredder ;0;0;0;0;0;0;0;0;0;1
+Name,Tier,Attack,Health,Cost,Legendary,Type,Keywords,Synergy,Combined,Jail,,Battlecry,Beast,Deathrattle,Demon,Divine Shield,Dragon,Mech,Murloc,No Tag,Pirate,Taunt
+Alleycat,1,1,1,1,,Beast,Battlecry,,"Beast, Battlecry",Beast,,1Alleycat,1Alleycat,1Fiendish Servant,1Fiendish Servant,1Righteous Protector,1Dragonspawn Lieutenant,1Mecharoo,1Murloc Tidecaller,1Righteous Protector,1Deck Swabbie,1Dragonspawn Lieutenant
+Deck Swabbie,1,2,2,,,Pirate,Battlecry,,"Pirate, Battlecry",Pirate,,1Deck Swabbie,1Scavenging Hyena,1Mecharoo,1Vulgar Homunculus,1Selfless Hero,1Red Whelp,1Micro Machine,1Murloc Tidehunter,1Selfless Hero,1Scallywag,1Righteous Protector
+Dragonspawn Lieutenant,1,2,3,2,,Dragon,Taunt,,"Dragon, Taunt",Dragon,,1Murloc Tidehunter,2Kindly Grandmother,1Scallywag,1Wrath Weaver,3Bronze Warden,2Glyph Guardian,2Harvest Golem,1Rockpool Hunter,1Wrath Weaver,2Freedealing Gambler,1Vulgar Homunculus
+Fiendish Servant,1,2,1,1,,Demon,Deathrattle,,"Demon, Deathrattle",Demon,,1Rockpool Hunter,2Pack Leader,1Selfless Hero,2Imprisoner,3Deflect-o-bot,2Steward of Time,2Kaboom Bot,2Murloc Warleader,2Menagerie Mug,2Southsea Captain,2Imprisoner
+Mecharoo,1,1,1,1,,Mech,Deathrattle,,"Mech, Deathrattle",Mech,,1Vulgar Homunculus,2Rabid Saurolisk,2Harvest Golem,2Nathrezim Overseer,4Annoy-o-Module,2Waxrider Togwaggle,2Metaltooth Leaper,2Old Murk-Eye,2Pack Leader,3Bloodsail Cannoneer,2Unstable Ghoul
+Micro Machine,1,1,2,2,,Mech,,,Mech,Mech,,2Menagerie Mug,3Houndmaster,2Imprisoner,3Crystalweaver,"4Bolvar,  Fireblood",3Bronze Warden,2Pogo-Hopper,3Coldlight Seer,2Spawn of N'Zoth,3Salty Looter,3Houndmaster
+Murloc Tidecaller,1,1,2,1,,Murloc,,,Murloc,Murloc,,2Metaltooth Leaper,3Infested Wolf,2Kaboom Bot,3Imp Gang Boss,4Drakonid Enforcer,3Hangry Dragon,3Deflect-o-bot,3Felfin Navigator,2Unstable Ghoul,3Yo-Ho-Ogre,3Twilight Emissary
+Murloc Tidehunter,1,2,1,2,,Murloc,Battlecry,,"Murloc, Battlecry",Murloc,,2Nathrezim Overseer,3Monstrous Macaw,2Kindly Grandmother,3Soul Juggler,6Nadina the Red,3Twilight Emissary,3Piloted Shredder,4Primalfin Lookout,2Waxrider Togwaggle,4Goldgrubber,3Yo-Ho-Ogre
+Red Whelp,1,1,2,,,Dragon,,,Dragon,Dragon,,2Pogo-Hopper,3Rat Pack,2Rabid Saurolisk,4Floating Watcher,,4Cobalt Scalebane,3Replicating Menace,4Toxfin,3Crowd Favorite,4Ripsnarl Captain,4Annoy-o-Module
+Righteous Protector,1,1,1,1,,,"Divine Shield,  Taunt",,"Divine Shield,  Taunt",,,3Bloodsail Cannoneer,3The Beast,2Spawn of N'Zoth,4Siegebreaker,,4Drakonid Enforcer,3Screwjank Clunker,5King Bagurgle,3Crystalweaver,4Southsea Strongarm,4Defender of Argus
+Rockpool Hunter,1,2,3,2,,Murloc,Battlecry,,"Murloc, Battlecry",Murloc,,3Coldlight Seer,4Cave Hydra,2Unstable Ghoul,5Annihilan Battlemaster,,4Herald of Flame,4Annoy-o-Module,5Lightfang Enforcer,3Houndmaster,5Cap'n Hoggarr,4Security Rover
+Scallywag,1,2,1,,,Pirate,Deathrattle,,"Pirate, Deathrattle",Pirate,,3Crowd Favorite,4Savannah Highmane,3Infested Wolf,5Lightfang Enforcer,,5Lightfang Enforcer,4Iron Sensei,6Amalgadon,3Khadgar,5Lightfang Enforcer,4Siegebreaker
+Scavenging Hyena,1,2,2,2,,Beast,,,Beast,Beast,,3Crystalweaver,4Virmen Sensei,3Monstrous Macaw,5Mal'Ganis,,5Murozond,4Mechano-Egg,,3Shifter Zerus,"5Nat Pagle, Extreme Angler",5Strongshell Scavenger
+Selfless Hero,1,2,1,1,,,"Deathrattle, Divine Shield",,"Deathrattle, Divine Shield",,,3Felfin Navigator,5Ironhide Direhorn,3Piloted Shredder,5Voidlord,,"5Razorgore, the Untamed",4Security Rover,,3Soul Juggler,5Seabreaker Goliath,5Voidlord
+Vulgar Homunculus,1,2,4,2,,Demon,"Battlecry, Taunt",,"Demon, Battlecry, Taunt",Demon,,3Houndmaster,5Lightfang Enforcer,3Rat Pack,6Amalgadon,,6Amalgadon,5Junkbot,,"4Bolvar,  Fireblood",6Amalgadon,6Imp Mama
+Wrath Weaver,1,1,1,1,,,,Demon,Demon,,,3Screwjank Clunker,5Mama Bear,3Replicating Menace,6Imp Mama,,"6Kalecgos, Arcane Aspect",5Lightfang Enforcer,,4Defender of Argus,6Dread Admiral Eliza,"6Kalecgos, Arcane Aspect"
+Freedealing Gambler,2,3,3,,,Pirate,,,Pirate,Pirate,,3Twilight Emissary,6Amalgadon,3The Beast,,,6Nadina the Red,5Sneed's Old Shredder,,4Menagerie Jug,6The Tide Razor,
+Glyph Guardian,2,2,4,,,Dragon,,,Dragon,Dragon,,4Defender of Argus,6Ghastcoiler,4Mechano-Egg,,,,6Amalgadon,,4Virmen Sensei,,
+Harvest Golem,2,2,3,3,,Mech,Deathrattle,,"Mech, Deathrattle",Mech,,4Menagerie Jug,"6Goldrinn,  the Great Wolf",4Savannah Highmane,,,,6Foe Reaper 4000,,5Baron Rivendare,,
+Imprisoner,2,3,3,3,,Demon,"Deathrattle, Taunt",,"Demon, Deathrattle, Taunt",Demon,,4Primalfin Lookout,6Maexxna,5Baron Rivendare,,,,6Kangor's Apprentice,,5Brann Bronzebeard,,
+Kaboom Bot,2,2,2,3,,Mech,Deathrattle,,"Mech, Deathrattle",Mech,,4Southsea Strongarm,,5King Bagurgle,,,,,,5Lightfang Enforcer,,
+Kindly Grandmother,2,1,1,2,,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,4Toxfin,,5Sneed's Old Shredder,,,,,,5Strongshell Scavenger,,
+Menagerie Mug,2,2,2,3,,,Battlecry,,Battlecry,,,4Virmen Sensei,,5Voidlord,,,,,,6Kangor's Apprentice,,
+Metaltooth Leaper,2,3,3,3,,Mech,Battlecry,,"Mech, Battlecry",Mech,,5Annihilan Battlemaster,,6Ghastcoiler,,,,,,6Nadina the Red,,
+Murloc Warleader,2,3,3,3,,Murloc,,,Murloc,Murloc,,5Brann Bronzebeard,,"6Goldrinn,  the Great Wolf",,,,,,6The Tide Razor,,
+Nathrezim Overseer,2,2,3,3,,Demon,Battlecry,,"Demon, Battlecry",Demon,,5King Bagurgle,,6Kangor's Apprentice,,,,,,6Zapp Slywick,,
+Old Murk-Eye,2,2,4,4,Y,Murloc,Charge,,"Murloc, Charge",Murloc,,5Murozond,,6Nadina the Red,,,,,,,,
+Pack Leader,2,3,3,3,,,,Beast,Beast,,,5Strongshell Scavenger,,6The Tide Razor,,,,,,,,
+Pogo-Hopper,2,1,1,1,,Mech,Battlecry,,"Mech, Battlecry",Mech,,6Amalgadon,,,,,,,,,,
+Rabid Saurolisk,2,4,2,3,,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,"6Kalecgos, Arcane Aspect",,,,,,,,,,
+Southsea Captain,2,3,3,,,Pirate,,,Pirate,Pirate,,,,,,,,,,,,
+Spawn of N'Zoth,2,2,2,3,,,Deathrattle,,Deathrattle,,,,,,,,,,,,,
+Steward of Time,2,3,4,,,Dragon,,,Dragon,Dragon,,,,,,,,,,,,
+Unstable Ghoul,2,1,3,2,,,"Deathrattle, Taunt",,"Deathrattle, Taunt",,,,,,,,,,,,,
+Waxrider Togwaggle,2,1,2,,Y,,,Dragon,Dragon,,,,,,,,,,,,,
+Bloodsail Cannoneer,3,4,2,,,Pirate,Battlecry,,"Pirate, Battlecry",Pirate,,,,,,,,,,,,
+Bronze Warden,3,2,1,,,Dragon,"Divine Shield, Reborn",,"Dragon, Divine Shield, Reborn",Dragon,,,,,,,,,,,,
+Coldlight Seer,3,2,3,3,,Murloc,Battlecry,,"Murloc, Battlecry",Murloc,,,,,,,,,,,,
+Crowd Favorite,3,4,4,4,,,Battlecry,,Battlecry,,,,,,,,,,,,,
+Crystalweaver,3,5,4,4,,,Battlecry,Demon,"Battlecry, Demon",,,,,,,,,,,,,
+Deflect-o-bot,3,3,2,5,,Mech,Divine Shield,,"Mech, Divine Shield",Mech,,,,,,,,,,,,
+Felfin Navigator,3,4,4,,,Murloc,Battlecry,,"Murloc, Battlecry",Murloc,,,,,,,,,,,,
+Hangry Dragon,3,4,4,,,Dragon,,,Dragon,Dragon,,,,,,,,,,,,
+Houndmaster,3,4,3,4,,,"Battlecry, Taunt",Beast,"Battlecry, Taunt, Beast",,,,,,,,,,,,,
+Imp Gang Boss,3,2,4,3,,Demon,,,Demon,Demon,,,,,,,,,,,,
+Infested Wolf,3,3,3,4,,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,,,,,,,,,,,
+Khadgar,3,2,2,2,Y,,,,,,,,,,,,,,,,,
+Monstrous Macaw,3,4,3,,,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,,,,,,,,,,,
+Piloted Shredder,3,4,3,4,,Mech,Deathrattle,,"Mech, Deathrattle",Mech,,,,,,,,,,,,
+Rat Pack,3,2,2,3,,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,,,,,,,,,,,
+Replicating Menace,3,3,1,4,,Mech,"Deathrattle, Magnetic",,"Mech, Deathrattle, Magnetic",Mech,,,,,,,,,,,,
+Salty Looter,3,3,3,,,Pirate,,,Pirate,Pirate,,,,,,,,,,,,
+Screwjank Clunker,3,2,5,4,,Mech,Battlecry,,"Mech, Battlecry",Mech,,,,,,,,,,,,
+Shifter Zerus,3,1,1,1,Y,,,,,,,,,,,,,,,,,
+Soul Juggler,3,3,3,3,,,,Demon,Demon,,,,,,,,,,,,,
+The Beast,3,9,7,6,Y,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,,,,,,,,,,,
+Twilight Emissary,3,4,4,,,Dragon,"Battlecry, Taunt",,"Dragon, Battlecry, Taunt",Dragon,,,,,,,,,,,,
+Yo-Ho-Ogre,3,2,8,,,Pirate,Taunt,,"Pirate, Taunt",Pirate,,,,,,,,,,,,
+Annoy-o-Module,4,2,4,4,,Mech,"Divine Shield, Magnetic, Taunt",,"Mech, Divine Shield, Magnetic, Taunt",Mech,,,,,,,,,,,,
+"Bolvar,  Fireblood",4,1,7,5,Y,,Divine Shield,,Divine Shield,,,,,,,,,,,,,
+Cave Hydra,4,2,4,3,,Beast,,,Beast,Beast,,,,,,,,,,,,
+Cobalt Scalebane,4,5,5,5,,Dragon,,,Dragon,Dragon,,,,,,,,,,,,
+Defender of Argus,4,2,3,4,,,"Battlecry, Taunt",,"Battlecry, Taunt",,,,,,,,,,,,,
+Drakonid Enforcer,4,3,6,,,Dragon,Divine Shield,,"Dragon, Divine Shield",Dragon,,,,,,,,,,,,
+Floating Watcher,4,4,4,5,,Demon,,,Demon,Demon,,,,,,,,,,,,
+Goldgrubber,4,2,2,,,Pirate,,,Pirate,Pirate,,,,,,,,,,,,
+Herald of Flame,4,5,6,,,Dragon,Overkill,,"Dragon, Overkill",Dragon,,,,,,,,,,,,
+Iron Sensei,4,2,2,3,,Mech,,,Mech,Mech,,,,,,,,,,,,
+Mechano-Egg,4,0,5,5,,Mech,Deathrattle,,"Mech, Deathrattle",Mech,,,,,,,,,,,,
+Menagerie Jug,4,3,3,5,,,Battlecry,,Battlecry,,,,,,,,,,,,,
+Primalfin Lookout,4,3,2,3,,Murloc,"Battlecry, Discover",,"Murloc, Battlecry, Discover",Murloc,,,,,,,,,,,,
+Ripsnarl Captain,4,3,4,,,Pirate,,,Pirate,Pirate,,,,,,,,,,,,
+Savannah Highmane,4,6,5,6,,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,,,,,,,,,,,
+Security Rover,4,2,6,6,,Mech,Taunt,,"Mech, Taunt",Mech,,,,,,,,,,,,
+Siegebreaker,4,5,8,7,,Demon,Taunt,,"Demon, Taunt",Demon,,,,,,,,,,,,
+Southsea Strongarm,4,5,4,,,Pirate,Battlecry,,"Pirate, Battlecry",Pirate,,,,,,,,,,,,
+Toxfin,4,1,2,1,,Murloc,"Battlecry,  Poisonous",,"Murloc, Battlecry,  Poisonous",Murloc,,,,,,,,,,,,
+Virmen Sensei,4,4,5,5,,,Battlecry,Beast,"Battlecry, Beast",,,,,,,,,,,,,
+Annihilan Battlemaster,5,3,1,8,,Demon,Battlecry,,"Demon, Battlecry",Demon,,,,,,,,,,,,
+Baron Rivendare,5,1,7,4,Y,,Deathrattle,,Deathrattle,,,,,,,,,,,,,
+Brann Bronzebeard,5,2,4,3,Y,,Battlecry,,Battlecry,,,,,,,,,,,,,
+Cap'n Hoggarr,5,6,6,,Y,Pirate,,,Pirate,Pirate,,,,,,,,,,,,
+Ironhide Direhorn,5,7,7,7,,Beast,Overkill,,"Beast, Overkill",Beast,,,,,,,,,,,,
+Junkbot,5,1,5,5,,Mech,,,Mech,Mech,,,,,,,,,,,,
+King Bagurgle,5,6,3,8,Y,Murloc,"Battlecry, Deathrattle",,"Murloc, Battlecry, Deathrattle",Murloc,,,,,,,,,,,,
+Lightfang Enforcer,5,2,2,6,,,,"Mech,  Murloc,  Demon,  Beast, Dragon, Pirate","Mech,  Murloc,  Demon,  Beast, Dragon, Pirate",,,,,,,,,,,,,
+Mal'Ganis,5,9,7,9,Y,Demon,Immune,,"Demon, Immune",Demon,,,,,,,,,,,,
+Mama Bear,5,4,4,8,,Beast,,,Beast,Beast,,,,,,,,,,,,
+Murozond,5,5,5,,Y,Dragon,Battlecry,,"Dragon, Battlecry",Dragon,,,,,,,,,,,,
+"Nat Pagle, Extreme Angler",5,8,5,,Y,Pirate,,,Pirate,Pirate,,,,,,,,,,,,
+"Razorgore, the Untamed",5,2,4,,Y,Dragon,,,Dragon,Dragon,,,,,,,,,,,,
+Seabreaker Goliath,5,6,7,,,Pirate,"Overkill, Windfury",,"Pirate, Overkill, Windfury",Pirate,,,,,,,,,,,,
+Sneed's Old Shredder,5,5,7,8,,Mech,Deathrattle,,"Mech, Deathrattle",Mech,,,,,,,,,,,,
+Strongshell Scavenger,5,2,3,4,,,"Battlecry, Taunt",,"Battlecry, Taunt",,,,,,,,,,,,,
+Voidlord,5,3,9,9,,Demon,"Deathrattle, Taunt",,"Demon, Deathrattle, Taunt",Demon,,,,,,,,,,,,
+Amalgadon,6,12,12,,,"Mech,  Murloc,  Demon,  Beast, Dragon, Pirate",Battlecry,,"Mech,  Murloc,  Demon,  Beast, Dragon, Pirate, Battlecry",,,,,,,,,,,,,
+Dread Admiral Eliza,6,6,7,,Y,Pirate,,,Pirate,Pirate,,,,,,,,,,,,
+Foe Reaper 4000,6,6,9,8,Y,Mech,,,Mech,Mech,,,,,,,,,,,,
+Ghastcoiler,6,7,7,6,,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,,,,,,,,,,,
+"Goldrinn,  the Great Wolf",6,4,4,8,Y,Beast,Deathrattle,,"Beast, Deathrattle",Beast,,,,,,,,,,,,
+Imp Mama,6,6,10,,,Demon,Taunt,,"Demon, Taunt",Demon,,,,,,,,,,,,
+"Kalecgos, Arcane Aspect",6,4,12,,Y,Dragon,"Battlecry, Taunt",,"Dragon, Battlecry, Taunt",Dragon,,,,,,,,,,,,
+Kangor's Apprentice,6,3,6,10,,,Deathrattle,Mech,"Deathrattle, Mech",,,,,,,,,,,,,
+Maexxna,6,2,8,6,Y,Beast,Poisonous,,"Beast, Poisonous",Beast,,,,,,,,,,,,
+Nadina the Red,6,7,4,,Y,,"Deathrattle, Divine Shield",Dragon,"Deathrattle, Divine Shield, Dragon",,,,,,,,,,,,,
+The Tide Razor,6,6,4,,,,Deathrattle,Pirate,"Deathrattle, Pirate",,,,,,,,,,,,,
+Zapp Slywick,6,7,10,6,Y,,Windfury,,Windfury,,,,,,,,,,,,,
