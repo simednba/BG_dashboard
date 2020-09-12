@@ -69,9 +69,9 @@ graphs_generals = {'MMR': 'mmr',
                    'Top gain MMR(champions)': 'mmr total gagné',
                    'Top gain MMR(comps)': 'mmr total gagné',
                    'Top perte MMR(champions)': 'mmr total perdu',
-                   'Top perte MMR(comps)': 'mmr total perdue',
+                   'Top perte MMR(comps)': 'mmr total perdu',
                    'Top Net MMR(champions)': 'gain mmr',
-                   'Top Net MMR(comps)': 'net mmr',
+                   'Top Net MMR(comps)': 'gain mmr',
                    'Top Winrate(champions)': 'winrate',
                    'Top Winrate(comps)': 'winrate',
                    'Top placement moyen(champions)': 'position moyenne',
@@ -87,6 +87,8 @@ graphs_generals = {'MMR': 'mmr',
 @app.callback(Output('content', 'children'),
               [Input('main', 'value')])
 def render_content(tab):
+    if tab == None:
+        return 'Hello'
     if tab == 'global':
         return dbc.Container(fluid=True, children=[
             dbc.Row(
@@ -424,8 +426,8 @@ def render_comparison(filtre_col, sort_by, champs, compar_type):
                 dbc.Col([html.H2('Winrate'), render_graph(winrate_x, winrate_y,
                                                           t='bar_c', fig_title='Winrate')]),
                 dbc.Col(dcc.Graph(
-                    id='compar_mmr',
-                    figure=go.Figure(data=[go.Scatter(name=champ, y=[0]+cbt_winrate_champs[champ], x=[*range(len(cbt_winrate_champs[champ])+1)]) for champ in champs if champ in cbt_winrate_champs],
+                    id='combat_winrate',
+                    figure=go.Figure(data=[go.Scatter(name=champ, y=cbt_winrate_champs[champ], x=[*range(len(cbt_winrate_champs[champ]))]) for champ in champs if champ in cbt_winrate_champs],
                                      layout=go.Layout(title=go.layout.Title(
                                          text=' <b>Combat winrate</b>'))
 
@@ -548,10 +550,11 @@ def render_graph(x, y, titre='', t='pie', fig_title='', **kwargs):
         char = x[0]
 
         if char in imgs:
-            images = get_img_dict([imgs[char] for char in x])
+            images = get_img_dict([imgs[char]
+                                   for char in x], sizes=[0.05*len(x), 0.5])
         else:
             images = get_img_dict([imgs_types[t]
-                                   for t in x], sizes=[0.25, 0.5])
+                                   for t in x], sizes=[0.05*len(x), 0.5])
         return html.Div(style={'height': '90vh'}, children=[
             html.H2(titre),
             dcc.Graph(style={'height': 'inherit'}, figure=go.Figure(data=[go.Bar(x=y, text=y, textposition='auto', orientation='h')],
