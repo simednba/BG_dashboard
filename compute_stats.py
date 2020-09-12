@@ -12,6 +12,9 @@ import os
 log2df = {'Aranna Starseeker': 'Aranna, Unleashed',
           'Yogg-Saron': "Yogg-Saron, Hope's End"}
 to_del = ['Brann Bronzebeard']
+df_tags = pd.read_csv(os.path.join(__file__.replace(
+    '\compute_stats.py', ''), 'types.csv'))
+df_tags = df_tags.fillna('')
 
 
 def df_to_dict(df, df_new):
@@ -140,68 +143,159 @@ def process_log_data(log_data):
     battle luck, comp type and combat winrate
     """
     results = []
+    buggeds = []
     for match in log_data:
         lucks = []
-        turns = [k for k in match.keys() if type(k) == int]
+        turns = [k for k in match.keys() if k in list(range(20))]
         if len(turns) == 0:
             continue
-        last_turn = max([k for k in match.keys() if type(k) == int])
+        last_turn = max(turns)
         last_board = match[last_turn]['board']
-        combat_result = []
-        for i in range(1, last_turn+1):
+        combat_results = []
+        boards = {}
+        statss = {}
+        for turn in range(1, last_turn+1):
+            comp_type, stats, bugged = get_board_type_and_stats(
+                match[turn]['board'])
+            statss[turn] = stats
+            buggeds.append(bugged)
             luck = True
-            if len(match[i]['winrates']) == 0:
+            if len(match[turn]['winrates']) == 0:
                 luck = False
             else:
-                winrate = match[i]['winrates'][0]
-            if match[i]['winner'] in ['None', 'Tie']:
-                combat_result.append('None')
+                winrate = match[turn]['winrates'][0]
+            if match[turn]['winner'] in ['None', 'Tie']:
+                combat_result = 'None'
             else:
-                if match[i]['winner'] == match['hero']:
-                    combat_result.append('win')
+                if match[turn]['winner'] == match['hero']:
+                    combat_result = 'win'
                     if luck:
                         lucks.append(100-winrate)
                 else:
-                    combat_result.append('loss')
+                    combat_result = 'loss'
                     if luck:
                         lucks.append(-winrate)
+            combat_results.append(combat_result)
+            boards[turn] = {'minions': match[turn]['board'],
+                            'type': comp_type, 'result': combat_result, 'turn': turn}
         luck = np.mean(lucks)
-        comp_type = get_board_type(last_board)
+        comp_type = get_comp_type(boards)
         results.append({'hero': match['hero'], 'pos': match['pos'],
-                        'luck': luck, 'board': last_board,
-                        'combat_results': combat_result,
+                        'luck': luck, 'boards': boards,
+                        'combat_results': combat_results,
                         'last_mmr': match['last_mmr'], 'mmr': match['new_mmr'],
-                        'comp_type': comp_type})
+                        'comp_type': comp_type,
+                        'board_stats': statss})
     return results
 
 
-def get_board_type(board):
+def get_comp_type(boards):
+    coeffs = {1: 1, 2: 1, 3: 2, 4: 2, 5: 2, 6: 3, 7: 3, 8: 3, 9: 4, 10: 4,
+              11: 4, 12: 5, 13: 5, 14: 5, 15: 5, 16: 6, 17: 6, 18: 6, 19: 6, 20: 7}
+    all_types = np.unique([v['type'] for v in boards.values()])
+    results = {t: 0 for t in all_types}
+    for nb_turn, board_data in boards.items():
+        results[board_data['type']] += coeffs[nb_turn]
+    max_value = max(list(results.values()))
+    comp_at_max = [k for k, v in results.items() if v == max_value]
+    if len(comp_at_max) == 0:
+        print(results)
+        return None
+    comp_type = comp_at_max[0]
+    return comp_type
+
+
+def get_board_type_and_stats(board):
+    replace = {'goldrinn': 'goldrinn,  the great wolf',
+               'tabbycat': 'alleycat',
+               'murlocscout': 'murloc tidehunter',
+               'spawnofnzoth':  "spawn of n'zoth",
+               'murloc scout': 'murloc tidehunter',
+               'deflectobot': 'deflect-o-bot',
+               'kangorsapprentice': "kangor's apprentice",
+               'mechanoegg': 'mechano-egg',
+               'razorgoretheuntamed': 'razorgore, the untamed',
+               'kalecgosarcaneaspect': 'kalecgos, arcane aspect',
+               'goldrinnthegreatwolf': 'goldrinn,  the great wolf',
+               'malganis': "mal'ganis",
+               'oldmurkeye': 'old murk-eye',
+               'bolvarfireblood': 'bolvar,  fireblood',
+               'sneedsoldshredder': "sneed's old shredder",
+               'razorgore': 'razorgore, the untamed',
+               'nat pagle': 'nat pagle, extreme angler',
+               'bolvar': 'bolvar,  fireblood',
+               'kalecgos': 'kalecgos, arcane aspect',
+               }
+    old = {'zoobot': ['Mech'],
+           'amalgam': ['Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc'],
+           'holymackerel': ['Murloc', 'Divine Shield'],
+           'gentle megasaur': ['Murloc'],
+           }
     if board == []:
-        return 'None'
-    df_tags = pd.read_csv(os.path.join(__file__.replace(
-        '\compute_stats.py', ''), 'types.csv'), sep=';')
-    noms = df_tags['nom'].values
-    possible_tags = {'d': 'divin',
-                     'r': 'death', }
-    possible = ['pirate', 'mech', 'murloc', 'dragon',
-                'big demon', 'token demon', 'beast', 'death', 'menagerie', 'divin']
+        return 'None', None, []
+    noms = np.array([n.lower().strip() for n in df_tags['Name'].values])
+    noms_ = np.array([n.replace(' ', '') for n in noms])
+    possible_tags = ['Beast', 'Pirate', 'Dragon', 'Demon',
+                     'Mech', 'Murloc', 'Divine Shield', 'Deathrattle']
     board_tags = []
+    bugged = []
+    all_minions = {}
+    tot_atq, tot_pv = 0, 0
     for minion in board:
         splitted = minion.split(',')
+        atq = int(minion.split('(')[1].split(',')[0])
+        try:
+            pv = int(minion.split(',')[1].split(')')[0])
+        except:
+            pv = int(minion.split(',')[2].split(')')[0])
+        tot_atq += atq
+        tot_pv += pv
         if len(splitted) <= 1:
             continue
-        tags = splitted[2:]
+        name = splitted[0].split('(')[0].strip().lower()
+        if name in replace:
+            name = replace[name]
+        all_minions[name] = {'atq': atq, 'pv': pv}
+        idx = np.where(noms == name)[0]
+        if len(idx) == 0:
+            idx = np.where(noms_ == name)[0]
+            if len(idx) == 0:
+                if name in old:
+                    tags = old[name]
+                else:
+                    bugged.append(name)
+                    continue
+            else:
+                tags = df_tags.iloc[idx]['Combined'].values[0].split(',')
+        else:
+            tags = df_tags.iloc[idx]['Combined'].values[0].split(',')
         for tag in tags:
             if tag in possible_tags:
-                board_tags.append(possible_tags[tag])
-        name = splitted[0].split('(')[0]
-        df_data = df_tags.iloc[np.where(noms == name)[0]]
-        tags_idx = np.where(df_data.any().values[1:])[0]
-        for tag_idx in tags_idx:
-            board_tags.append(list(df_data.columns)[tag_idx+1])
+                board_tags.append(tag.strip())
     c_tags = Counter(board_tags)
-    winner = c_tags.most_common()[0][0]
-    return winner
+    if 'pogo-hopper' in all_minions and all_minions['pogo-hopper']['pv'] >= 6:
+        type_ = 'Pogo Hopper'
+    elif 'lightfang enforcer' in all_minions:
+        type_ = 'Menagerie'
+    elif (('bolvar,  fireblood' in all_minions and 'drakonid enforcer' in all_minions)
+          or ('bolvar,  fireblood' in all_minions and c_tags['Divine Shield'] >= 4)
+          or ('drakonid enforcer' in all_minions and c_tags['Divine Shield'] >= 3)):
+        type_ = 'Divine Shield'
+    elif ('baron rivendare' in all_minions and c_tags['Deathrattle'] >= 2) or c_tags['Deathrattle'] >= 4:
+        type_ = 'Deathrattle'
+    else:
+        races = {k: v for k, v in c_tags.items() if k in [
+            'Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc']}
+        best_race, n = c_tags.most_common()[0]
+        if len(races) >= 3:
+            if n >= 3:
+                type_ = best_race
+            else:
+                type_ = 'Menagerie'
+        else:
+            type_ = best_race
+
+    return type_, {'atq': tot_atq, 'pv': tot_pv}, bugged
 
 
 def get_comp_types_stats(log_data):
@@ -213,7 +307,6 @@ def get_comp_types_stats(log_data):
         subresults = {}
         all_type_data = [log for log in log_data if log['comp_type'] == type_]
         all_combat_results = [log['combat_results'] for log in all_type_data]
-        subresults['cbt_winrate'] = get_cbt_winrate(all_combat_results)
         subresults['%_joué'] = nb_played/len(log_data)
         subresults['nombre de fois joué'] = nb_played
         all_positions = Counter([log['pos']
@@ -271,6 +364,25 @@ def get_cbt_winrate_per_champ(log_data):
         all_champ_data = [log for log in log_data if log['hero'] == champ]
         all_combat_results = [log['combat_results'] for log in all_champ_data]
         results[champ] = get_cbt_winrate(all_combat_results)
+    return results
+
+
+def get_cbt_winrate_per_comp(log_data):
+    all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper']
+    results = {champ: [] for champ in all_comps}
+    for comp in all_comps:
+        all_comp_data = [d for a in [list(k.values()) for k in [
+            l['boards'] for l in log_data]]for d in a if d['type'] == comp]
+        all_turns = np.unique([d['turn'] for d in all_comp_data])
+        max_turn = max(all_turns)
+        for turn in range(1, max_turn):
+            if turn not in all_turns:
+                results[comp].append(50)
+            all_turn_data = Counter([d['result']
+                                     for d in all_comp_data if d['turn'] == turn])
+            results[comp].append(
+                round_(all_turn_data['win']/(all_turn_data['loss']+all_turn_data['win']+0.01)*100, 2))
     return results
 
 
@@ -354,11 +466,11 @@ def get_all_stats():
     top_n = get_top_n_rate(champs_pos)
     # LOG data
     log_data = [data for a in parse_logs(LOG_PATH) for data in a]
-    # battle luck,
     pickrate, nb_proposed = get_pickrate(log_data)
     percent_proposed = {k: v/len(log_data) for k, v in nb_proposed.items()}
     log_data = process_log_data(log_data)
     cbt_winrate_champs = get_cbt_winrate_per_champ(log_data)
+    cbt_winrate_comps = get_cbt_winrate_per_comp(log_data)
     log_data = reorder_logs(log_data, data)
     comp_types = get_comp_types_stats(log_data)
     comp_types_per_champ = get_comp_types_per_champ(log_data)
@@ -421,7 +533,7 @@ def get_all_stats():
 
     return (df_champ, df_top_n_champ, df_all_champ, df_types,
             all_matches_per_champ, mmr_evo, mean_position,
-            cbt_winrate_champs, comp_types_per_champ, comp_types, battle_luck)
+            cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ, comp_types, battle_luck)
 
 
 # def get_all_stats_():

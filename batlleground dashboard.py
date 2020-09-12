@@ -39,7 +39,7 @@ server = app.server
 app.config.suppress_callback_exceptions = True
 
 (df_stats_champs, df_top_champs, df_all_champ, df_types,  all_matches_champs,
- mmr, mean_position, cbt_winrate_champs, comp_types_per_champ,
+ mmr, mean_position, cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
  comp_types, battle_luck) = get_all_stats()
 df_all_champ.loc['global', df_stats_champs.describe(
 ).columns] = df_stats_champs.describe().loc['mean'].round(2)
@@ -332,8 +332,8 @@ def render_type_page(choice):
                                      titre=f"winrate = {data['winrate']*100}%, position moyenne =  {round_(data['placement moyen'],2)}", t='bar_p'))
             ]
             ), dbc.Row([
-                dbc.Col(render_graph(x=list(range(len(data['cbt_winrate'])+1)),
-                                     y=data['cbt_winrate'],
+                dbc.Col(render_graph(x=list(range(len(cbt_winrate_comps[choice]))),
+                                     y=cbt_winrate_comps[choice],
                                      titre=f"Combat winrate",
                                      t='scatter')),
                 dbc.Col(render_graph(x=list(data['champs_stats'].keys()),
