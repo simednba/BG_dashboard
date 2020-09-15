@@ -441,6 +441,30 @@ def reorder_logs(log_data, df_data):
             results.append(log_match[0])
     return results
 
+def get_board_popularity(log_data):
+    all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie']
+    temp = defaultdict(list)
+    for match in log_data:
+        for turn,board in match['boards'].items():
+            if board['type'] != 'None':
+                temp[turn].append(board['type'])
+    res = {k : Counter(v) for k,v in temp.items()}
+    to_return = {}
+    for comp_type in all_comps:
+        comp_res= []
+        for turn, turn_res in res.items():
+            if comp_type in turn_res:
+                comp_res.append(turn_res[comp_type]/sum(turn_res.values()))
+            else:
+                comp_res.append(0)
+        to_return[comp_type] = comp_res
+    return to_return
+
+    
+
+
+
 
 def get_all_stats():
     # CSV data
@@ -469,6 +493,7 @@ def get_all_stats():
     pickrate, nb_proposed = get_pickrate(log_data)
     percent_proposed = {k: v/len(log_data) for k, v in nb_proposed.items()}
     log_data = process_log_data(log_data)
+    board_pop = get_board_popularity(log_data)
     cbt_winrate_champs = get_cbt_winrate_per_champ(log_data)
     cbt_winrate_comps = get_cbt_winrate_per_comp(log_data)
     log_data = reorder_logs(log_data, data)
@@ -533,7 +558,7 @@ def get_all_stats():
 
     return (df_champ, df_top_n_champ, df_all_champ, df_types,
             all_matches_per_champ, mmr_evo, mean_position,
-            cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ, comp_types, battle_luck)
+            cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ, comp_types, battle_luck, board_pop)
 
 
 # def get_all_stats_():

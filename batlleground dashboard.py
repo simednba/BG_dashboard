@@ -40,7 +40,7 @@ app.config.suppress_callback_exceptions = True
 
 (df_stats_champs, df_top_champs, df_all_champ, df_types,  all_matches_champs,
  mmr, mean_position, cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
- comp_types, battle_luck) = get_all_stats()
+ comp_types, battle_luck, board_pop) = get_all_stats()
 df_all_champ.loc['global', df_stats_champs.describe(
 ).columns] = df_stats_champs.describe().loc['mean'].round(2)
 df_all_champ.loc['global', 'nom'] = 'moyenne'
@@ -61,6 +61,7 @@ app.layout = html.Div(children=[dcc.Tabs(id='main', value='main_v', children=[
 graphs_generals = {'MMR': 'mmr',
                    'MMR avec moyenne': 'mean_mmr',
                    'Compositions': 'compos',
+                   'Board popularity': 'board_pop',
                    'Placements(pie)': 'p',
                    'Placements(bar)': 'p_b',
                    'Top picks(nombre)': 'nombre de pick',
@@ -506,6 +507,8 @@ def render_general_page(t_1, n_max, n_min):
                 x, y, titre='', t='bar_g',
                 fig_title=f"Winrate global : {df_top_champs.loc['global']['winrate']}, Placement moyen : {mean_position}"))
 
+    elif t_1 == 'Board popularity':
+        return html.Div(dcc.Graph(id='board_pop', figure=go.Figure(data=[go.Scatter(name=comp, y=board_pop[comp], x=list(range(1, len(board_pop[comp])+1))) for comp in board_pop.keys()])))
     else:
         key = graphs_generals[t_1]
         results = {}
