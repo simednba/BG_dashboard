@@ -42,7 +42,7 @@ For the moment, here are the statistics which you will have access to:
 - net MMR & mean position per hero
 
 
-for some examples, go see the Wiki of this repo
+for some examples : [Link](https://www.notion.so/BG-images-1e837b7a40cd4e97b067c2bf96f399e2)
 
 
 
