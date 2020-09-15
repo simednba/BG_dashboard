@@ -236,7 +236,7 @@ def get_board_type_and_stats(board):
     noms = np.array([n.lower().strip() for n in df_tags['Name'].values])
     noms_ = np.array([n.replace(' ', '') for n in noms])
     possible_tags = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                     'Mech', 'Murloc', 'Divine Shield', 'Deathrattle']
+                     'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Menagerie']
     board_tags = []
     bugged = []
     all_minions = {}
@@ -369,7 +369,7 @@ def get_cbt_winrate_per_champ(log_data):
 
 def get_cbt_winrate_per_comp(log_data):
     all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper']
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie']
     results = {champ: [] for champ in all_comps}
     for comp in all_comps:
         all_comp_data = [d for a in [list(k.values()) for k in [
