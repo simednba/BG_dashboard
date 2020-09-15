@@ -18,8 +18,8 @@ from compute_stats import get_all_stats, rolling_mean, round_
 import dash_table
 import numpy as np
 from PIL import Image
-from config import IMG_PATH
 
+IMG_PATH = 'images/'
 
 imgs = {}
 for filename in os.listdir(IMG_PATH):
