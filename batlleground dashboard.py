@@ -214,7 +214,7 @@ def render_char_graph(char):
         y_pos = np.take_along_axis(mean_pos_per_type, sorted_idx_pos, axis=0)
         x_pie = list(comp_types_per_champ[char]['types'].keys())
         y_pie = list(comp_types_per_champ[char]['types'].values())
-        x_wr = list(range(len(cbt_winrate_champs[char])+1))
+        x_wr = list(range(1, len(cbt_winrate_champs[char])+2))
         y_wr = list(cbt_winrate_champs[char])
     else:
         x_net_mmr, y_net_mmr, x_pos, y_pos = [], [], [], []
@@ -310,15 +310,21 @@ def render_type_page(choice):
     if choice is None:
         return 'Selectionnez un type dans la liste ci dessus'
     else:
+        n_champs = 5
         data = comp_types[choice]
-        all_champs = np.array(list(data['champs_stats'].keys()))
-        mmr_gain_per_champ = np.array([d['mmr']
-                                       for d in data['champs_stats'].values()])
+        all_champs = np.array([a[0] for a in sorted(data['champs_stats'].items(
+        ), key=lambda x:x[1]['nb_played'], reverse=True)])[:n_champs]
+        mmr_gain_per_champ = np.array(
+            [data['champs_stats'][hero]['mmr'] for hero in all_champs])
 
-        mean_pos_per_champ = np.array([round_(np.mean([int(a) for a in d['pos']]), 2)
-                                       for d in data['champs_stats'].values()])
+        mean_pos_per_champ = np.array([round_(np.mean(
+            [int(a) for a in data['champs_stats'][hero]['pos']]), 2) for hero in all_champs])
         sort_idx_mmr = np.argsort(-mmr_gain_per_champ)
         sort_idx_pos = np.argsort(mean_pos_per_champ)
+        x_pie = list(all_champs)+['Others']
+        y_pie = [data['champs_stats'][hero]['nb_played']/data['nombre de fois joué']
+                 for hero in all_champs]
+        y_pie.append(1-sum(y_pie))
         layout = html.Div([
             dbc.Row([
                 dbc.Col(render_graph(x=list(range(len(data['mmr_evo'])+1)),
@@ -332,28 +338,29 @@ def render_type_page(choice):
                                      titre=f"winrate = {data['winrate']*100}%, position moyenne =  {round_(data['placement moyen'],2)}", t='bar_p'))
             ]
             ), dbc.Row([
-                dbc.Col(render_graph(x=list(range(len(cbt_winrate_comps[choice]))),
+                dbc.Col(render_graph(x=list(range(1, len(cbt_winrate_comps[choice])+2)),
                                      y=cbt_winrate_comps[choice],
                                      titre=f"Combat winrate",
                                      t='scatter')),
-                dbc.Col(render_graph(x=list(data['champs_stats'].keys()),
-                                     y=[d['nb_played']/data['nombre de fois joué']
-                                         for d in data['champs_stats'].values()],
+                dbc.Col(render_graph(x=x_pie,
+                                     y=y_pie,
                                      titre='Repartition des persos',
                                      t='pie_p',
                                      ))]),
             dbc.Row([
                     dbc.Col(render_graph(
-                        x=np.take_along_axis(all_champs, sort_idx_mmr, axis=0),
+                        x=np.take_along_axis(
+                            all_champs, sort_idx_mmr, axis=0)[:5],
                         y=np.take_along_axis(
-                            mmr_gain_per_champ, sort_idx_mmr, axis=0),
+                            mmr_gain_per_champ, sort_idx_mmr, axis=0)[:5],
                         titre='Net MMR par perso',
                         t='bar'
                     )),
                     dbc.Col(render_graph(
-                        x=np.take_along_axis(all_champs, sort_idx_pos, axis=0),
+                        x=np.take_along_axis(
+                            all_champs, sort_idx_pos, axis=0)[:5],
                         y=np.take_along_axis(
-                            mean_pos_per_champ, sort_idx_pos, axis=0),
+                            mean_pos_per_champ, sort_idx_pos, axis=0)[:5],
                         titre='Position moyenne par perso',
                         t='bar'))
                     ])
