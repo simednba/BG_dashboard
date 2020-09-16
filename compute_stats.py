@@ -190,8 +190,8 @@ def process_log_data(log_data):
 
 
 def get_comp_type(boards):
-    coeffs = {1: 1, 2: 1, 3: 2, 4: 2, 5: 2, 6: 3, 7: 3, 8: 3, 9: 4, 10: 4,
-              11: 4, 12: 5, 13: 5, 14: 5, 15: 5, 16: 6, 17: 6, 18: 6, 19: 6, 20: 7}
+    coeffs = {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 3, 7: 3, 8: 3, 9: 4, 10: 4,
+              11: 5, 12: 5, 13: 6, 14: 6, 15: 7, 16: 7, 17: 8, 18: 8, 19: 9, 20: 9}
     all_types = np.unique([v['type'] for v in boards.values()])
     results = {t: 0 for t in all_types}
     for nb_turn, board_data in boards.items():
@@ -438,21 +438,23 @@ def reorder_logs(log_data, df_data):
         log_match = [l for l in log_data if l['hero']
                      == hero and int(l['mmr']) == mmr]
         if len(log_match) > 0:
+            log_match[0]['date'] = match['date']
             results.append(log_match[0])
     return results
+
 
 def get_board_popularity(log_data):
     all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
                  'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie']
     temp = defaultdict(list)
     for match in log_data:
-        for turn,board in match['boards'].items():
+        for turn, board in match['boards'].items():
             if board['type'] != 'None':
                 temp[turn].append(board['type'])
-    res = {k : Counter(v) for k,v in temp.items()}
+    res = {k: Counter(v) for k, v in temp.items()}
     to_return = {}
     for comp_type in all_comps:
-        comp_res= []
+        comp_res = []
         for turn, turn_res in res.items():
             if comp_type in turn_res:
                 comp_res.append(turn_res[comp_type]/sum(turn_res.values()))
@@ -461,9 +463,27 @@ def get_board_popularity(log_data):
         to_return[comp_type] = comp_res
     return to_return
 
-    
+
+def build_df_board_stats(log_data):
+    to_df = {}
+    for index, data in enumerate(log_data):
+        nb_turns = len(data['combat_results'])
+        to_df[index] = [data['hero'], data['comp_type'], *
+                        [sum(v.values()) for k, v in data['board_stats'].items() if v], *[np.nan for i in range(20-nb_turns)]]
+    df = pd.DataFrame.from_dict(to_df, orient='index', columns=[
+                                'hero', 'comp', *[i for i in range(1, 21)]])
+    df.fillna(-1)
+    return df
 
 
+def build_df_games(log_data):
+    to_df = {}
+    for index, data in enumerate(log_data):
+        to_df[index] = [data['date'], data['hero'],
+                        data['comp_type'], data['pos']]
+    df = pd.DataFrame.from_dict(to_df, orient='index', columns=[
+                                'date', 'hero', 'comp', 'pos'])
+    return df
 
 
 def get_all_stats():
@@ -496,7 +516,9 @@ def get_all_stats():
     board_pop = get_board_popularity(log_data)
     cbt_winrate_champs = get_cbt_winrate_per_champ(log_data)
     cbt_winrate_comps = get_cbt_winrate_per_comp(log_data)
+    df_board_stats = build_df_board_stats(log_data)
     log_data = reorder_logs(log_data, data)
+    df_games = build_df_games(log_data)
     comp_types = get_comp_types_stats(log_data)
     comp_types_per_champ = get_comp_types_per_champ(log_data)
     results = defaultdict(list)
@@ -558,7 +580,8 @@ def get_all_stats():
 
     return (df_champ, df_top_n_champ, df_all_champ, df_types,
             all_matches_per_champ, mmr_evo, mean_position,
-            cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ, comp_types, battle_luck, board_pop)
+            cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
+            comp_types, df_board_stats, board_pop, df_games, log_data)
 
 
 # def get_all_stats_():
