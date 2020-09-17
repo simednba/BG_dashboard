@@ -214,17 +214,19 @@ def render_game(game_id):
                                                                   *[f'Minion {i}' for i in range(1, 8)], 'type', 'resultat'])
     board_stats = [sum(v.values())
                    for k, v in data['board_stats'].items() if v]
+    nb_turns = len(data['combat_results'])
     df_board_stats_champ = df_board_stats[df_board_stats['hero']
                                           == data['hero']]
     board_stats_champ = [np.nanmean(df_board_stats_champ[i])
-                         for i in range(1, 21)]
+                         for i in range(1, nb_turns+1)]
     df_board_stats_comp = df_board_stats[df_board_stats['comp']
                                          == data['comp_type']]
     board_stats_comp = [np.nanmean(df_board_stats_comp[i])
-                        for i in range(1, 21)]
+                        for i in range(1, nb_turns+1)]
     df_board_stats_all = df_board_stats[np.logical_and(
         df_board_stats['hero'] == data['hero'], df_board_stats['comp'] == data['comp_type'])]
-    board_stats_all = [np.nanmean(df_board_stats_all[i]) for i in range(1, 21)]
+    board_stats_all = [np.nanmean(df_board_stats_all[i])
+                       for i in range(1, nb_turns+1)]
     names = ['this game', 'mean for char',
              'mean for comp type', 'mean for char & comp_type']
     lines = [board_stats, board_stats_champ, board_stats_comp, board_stats_all]
