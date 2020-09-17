@@ -277,12 +277,12 @@ def get_board_type_and_stats(board):
         type_ = 'Pogo Hopper'
     elif 'lightfang enforcer' in all_minions:
         type_ = 'Menagerie'
-    elif (('bolvar,  fireblood' in all_minions and 'drakonid enforcer' in all_minions)
-          or ('bolvar,  fireblood' in all_minions and c_tags['Divine Shield'] >= 4)
-          or ('drakonid enforcer' in all_minions and c_tags['Divine Shield'] >= 3)):
-        type_ = 'Divine Shield'
     elif ('baron rivendare' in all_minions and c_tags['Deathrattle'] >= 2) or c_tags['Deathrattle'] >= 4:
         type_ = 'Deathrattle'
+    elif (('bolvar,  fireblood' in all_minions and 'drakonid enforcer' in all_minions)
+          or ('bolvar,  fireblood' in all_minions)
+          or ('drakonid enforcer' in all_minions and (('Dragon' in c_tags and c_tags['Dragon'] <= 3) or 'Dragon' not in c_tags))):
+        type_ = 'Divine Shield'
     else:
         races = {k: v for k, v in c_tags.items() if k in [
             'Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc']}
@@ -293,7 +293,10 @@ def get_board_type_and_stats(board):
             else:
                 type_ = 'Menagerie'
         else:
-            type_ = best_race
+            if len(c_tags.most_common()) > 1 and c_tags.most_common()[1][1] == n:
+                type_ = 'Menagerie'
+            else:
+                type_ = best_race
 
     return type_, {'atq': tot_atq, 'pv': tot_pv}, bugged
 
