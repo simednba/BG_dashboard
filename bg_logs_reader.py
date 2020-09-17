@@ -17,10 +17,12 @@ def extract_logs(path):
         data = f.read()
     lines = data.split('\n')
     messages = []
-    for line in lines:
+    for index_line, line in enumerate(lines):
         try:
             _, _, mess = line.split('|')
         except:
+            if 'duplicate' in line and 'RunSimulation' in lines[index_line-1]:
+                messages.append(messages[-1])
             continue
         messages.append(mess)
     return messages
