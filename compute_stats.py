@@ -82,9 +82,15 @@ def get_all_matches_per_champ(data):
 
 
 def get_all_mmr(data):
-    mmr = [int(match_data['mmr'].replace('"', ''))
-           for match_data in data if int(match_data['mmr'].replace('"', '')) > 3000]
-    return mmr
+    index_split = np.where([int(d['mmr']) < 1000 for d in data])[0][0]
+    old_data = data[:index_split]
+    new_data = data[index_split:]
+    old_mmr = [int(match_data['mmr'].replace('"', ''))
+               for match_data in old_data if int(match_data['mmr'].replace('"', '')) > 3000]
+    if len(new_data) > 0:
+        new_mmr = [int(match_data['mmr'].replace('"', ''))
+                   for match_data in new_data]
+    return old_mmr, new_mmr
 
 
 def get_all_position(data):
@@ -100,8 +106,9 @@ def get_mmr_gain(data):
         if index_match == 0:
             results[result_match['hero']].append(0)
         else:
-            results[result_match['hero']].append(
-                int(result_match['mmr'].replace('"', '')) - int(data[index_match-1]['mmr'].replace('"', '')))
+            mmr = max(int(result_match['mmr'].replace(
+                '"', '')) - int(data[index_match-1]['mmr'].replace('"', '')), -100)
+            results[result_match['hero']].append(mmr)
     return {k.replace('"', ''): (np.mean(v), sum(v), -sum([i for i in v if i < 0]), sum([i for i in v if i > 0])) for k, v in results.items()}
 
 
@@ -273,7 +280,7 @@ def get_board_type_and_stats(board):
             if tag in possible_tags:
                 board_tags.append(tag.strip())
     c_tags = Counter(board_tags)
-    if 'pogo-hopper' in all_minions and all_minions['pogo-hopper']['pv'] >= 6:
+    if 'pogo-hopper' in all_minions and (all_minions['pogo-hopper']['pv'] + all_minions['pogo-hopper']['atq']) >= (tot_atq+tot_pv)/5:
         type_ = 'Pogo Hopper'
     elif 'lightfang enforcer' in all_minions:
         type_ = 'Menagerie'
@@ -497,7 +504,7 @@ def get_all_stats():
     data = df_to_dict(df_champ, df_champ_new)
     all_matches_per_champ = get_all_matches_per_champ(data)
     all_heros = list(all_matches_per_champ.keys())
-    mmr_evo = get_all_mmr(data)
+    old_mmr, new_mmr = get_all_mmr(data)
     champs_pos = get_all_position(data)
     mean_position = round_(
         np.mean([v for x in champs_pos.values() for v in x]), 2)  # global mean pos
@@ -505,7 +512,6 @@ def get_all_stats():
         v) for k, v in champs_pos.items() if len(v) != 0}  # champ mean positions
     nb_played = {k.replace('"', ''): len(v)
                  for k, v in champs_pos.items()}  # nb times played(csv)
-    mmr_data = get_mmr_gain(data)  # (mean, net, lost, won)
     champ_mmr_data = get_mmr_gain(data)  # mean and total mmr per champ
     n_games = len(data)  # total games(csv)
     champ_played_percentage = {k: v/n_games for k,
@@ -582,84 +588,9 @@ def get_all_stats():
                                                                              'mmr total gagné', 'mmr total perdu', 'nombre de pick', *[f'% top {i}' for i in range(1, 9)], 'Victoires', 'Top 1'])
 
     return (df_champ, df_top_n_champ, df_all_champ, df_types,
-            all_matches_per_champ, mmr_evo, mean_position,
+            all_matches_per_champ, old_mmr, new_mmr, mean_position,
             cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
             comp_types, df_board_stats, board_pop, df_games, log_data)
-
-
-# def get_all_stats_():
-#     choices_and_pick = extract_choices_and_pick(LOG_PATH)
-#     picks_stats = get_pick_stats(choices_and_pick)
-#     df = pd.read_csv(CSV_PATH, sep=';').values
-#     data = df_to_dict(df)
-#     all_matches_per_champ = get_all_matches_per_champ(data)
-#     mmr_evo = get_all_mmr(data)
-#     champs_pos = get_all_position(data)
-#     mean_position = round_(
-#         np.mean([v for x in champs_pos.values() for v in x]), 2)  # global mean pos
-#     champ_mean_pos = {k.replace('"', ''): np.mean(
-#         v) for k, v in champs_pos.items() if len(v) != 0}  # champ mean positions
-#     nb_played = {k.replace('"', ''): len(v)
-#                  for k, v in champs_pos.items()}  # nb times played(csv)
-#     champ_mmr_data = get_mmr_gain(data)  # mean and total mmr per champ
-#     n_games = len(data)  # total games(csv)
-#     champ_played_percentage = {k: v/n_games for k,
-#                                v in nb_played.items()}  # played percentage
-#     # pickrate new ( but not csv)
-#     pickrate_new = {k: nb_played[k]/v[0]
-#                     for k, v in picks_stats.items() if k in nb_played}
-#     nb_proposed_new = {k: v[0] for k, v in picks_stats.items()}
-#     percent_proposed_new = {k: v[0]/n_games for k, v in picks_stats.items()}
-#     top_n = get_top_n_rate(champs_pos)
-#     all_heros = pickrate_new.keys()
-#     results = defaultdict(list)
-#     for hero in all_heros:
-#         if hero not in champ_mean_pos:
-#             champ_mean_pos[hero] = np.nan
-#         if hero not in champ_mmr_data:
-#             champ_mmr_data[hero] = [np.nan, np.nan, np.nan, np.nan]
-#         if hero not in nb_played:
-#             nb_played[hero] = np.nan
-#         if hero not in champ_played_percentage:
-#             champ_played_percentage[hero] = np.nan
-#         if hero not in nb_proposed_new:
-#             nb_proposed_new[hero] = np.nan
-#         if hero not in pickrate_new:
-#             pickrate_new[hero] = np.nan
-#         if hero not in percent_proposed_new:
-#             percent_proposed_new[hero] = 0
-#         results[hero] = [hero, round_(champ_mean_pos[hero], 2),
-#                          round_(champ_mmr_data[hero][0], 0),
-#                          champ_mmr_data[hero][3], champ_mmr_data[hero][2],
-#                          champ_mmr_data[hero][1], nb_played[hero],
-#                          nb_proposed_new[hero], round_(
-#                              pickrate_new[hero]*100, 1),
-#                          round_(champ_played_percentage[hero]*100, 1),
-#                          round_(percent_proposed_new[hero]*100, 1)
-#                          ]
-#     df = pd.DataFrame.from_dict(results, orient='index', columns=['nom', 'position moyenne',
-#                                                                   'mmr moyen par partie',
-#                                                                   'mmr total gagné',
-#                                                                   'mmr total perdu',
-#                                                                   'gain mmr',
-#                                                                   'nombre de pick',
-#                                                                   'nombre de fois proposé',
-#                                                                   'pickrate',
-#                                                                   '% de parties',
-#                                                                   '% proposé'
-#                                                                   ])
-
-#     top_n_temp = defaultdict(list)
-#     for hero, data_hero in top_n.items():
-#         hero = hero.replace('"', '')
-#         for place in range(1, 9):
-#             top_n_temp[hero].append(round_(data_hero[place]*100, 1))
-#         top_n_temp[hero].append(sum(top_n_temp[hero][:4]))
-#         top_n_temp[hero].insert(0, hero.replace('"', ''))
-#     df_top_n = pd.DataFrame.from_dict(top_n_temp, orient='index', columns=[
-#                                       'nom']+[f'% top {i}' for i in range(1, 9)]+['winrate'])
-#     df_all = pd.concat([df, df_top_n.drop('nom', axis=1)], axis=1)
-#     return df, df_top_n, df_all, all_matches_per_champ, mmr_evo, mean_position
 
 
 def round_(nb, n=2):

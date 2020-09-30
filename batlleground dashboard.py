@@ -39,7 +39,7 @@ server = app.server
 app.config.suppress_callback_exceptions = True
 
 (df_stats_champs, df_top_champs, df_all_champ, df_types,  all_matches_champs,
- mmr, mean_position, cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
+ old_mmr, new_mmr, mean_position, cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
  comp_types, df_board_stats, board_pop, df_games, log_data) = get_all_stats()
 df_all_champ.loc['global', df_stats_champs.describe(
 ).columns] = df_stats_champs.describe().loc['mean'].round(2)
@@ -59,8 +59,8 @@ app.layout = html.Div(children=[dcc.Tabs(id='main', value='main_v', children=[
 
 ])
 
-graphs_generals = {'MMR': 'mmr',
-                   'MMR avec moyenne': 'mean_mmr',
+graphs_generals = {'old MMR': 'old_mmr',
+                   'new MMR': 'new_mmr',
                    'Compositions': 'compos',
                    'Board popularity': 'board_pop',
                    'Placements(pie)': 'p',
@@ -515,17 +515,21 @@ def render_comparison(filtre_col, sort_by, champs, compar_type):
 def render_general_page(t_1, n_max, n_min):
     if t_1 == None:
         pass
-    elif t_1 == 'MMR':
+    elif t_1 == 'old MMR':
         return dcc.Graph(
             id='example-graph',
-            figure=go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin': {'t': 0, 'l': 0}}))
-    elif t_1 == 'MMR avec moyenne':
-        return dcc.Graph(
-            id='example-graph',
-            figure=go.Figure(data=[go.Scatter(name='MMR', y=mmr, x=list(range(len(mmr)))),
+            figure=go.Figure(data=[go.Scatter(name='MMR', y=old_mmr, x=list(range(len(old_mmr)))),
                                    go.Scatter(name='moyenne sur 10 parties', y=rolling_mean(
-                                       mmr, 10), x=list(range(len(mmr)))),
-                                   go.Scatter(name='moyenne sur 25 parties', y=rolling_mean(mmr, 25), x=list(range(len(mmr))))],
+                                       old_mmr, 10), x=list(range(len(old_mmr)))),
+                                   go.Scatter(name='moyenne sur 25 parties', y=rolling_mean(old_mmr, 25), x=list(range(len(old_mmr))))],
+                             layout={'margin': {'t': 0, 'l': 0}}))
+    elif t_1 == 'new MMR':
+        return dcc.Graph(
+            id='example-graph',
+            figure=go.Figure(data=[go.Scatter(name='MMR', y=new_mmr, x=list(range(len(new_mmr)))),
+                                   go.Scatter(name='moyenne sur 10 parties', y=rolling_mean(
+                                       new_mmr, 10), x=list(range(len(new_mmr)))),
+                                   go.Scatter(name='moyenne sur 25 parties', y=rolling_mean(new_mmr, 25), x=list(range(len(new_mmr))))],
                              layout={'margin': {'t': 0, 'l': 0}}))
     elif t_1 == 'Compositions':
         return render_graph(x=df_types['nom'].values,
