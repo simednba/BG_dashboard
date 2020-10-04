@@ -15,6 +15,8 @@ to_del = ['Brann Bronzebeard']
 df_tags = pd.read_csv(os.path.join(__file__.replace(
     '\compute_stats.py', ''), 'types.csv'))
 df_tags = df_tags.fillna('')
+possible_tags = ['Beast', 'Pirate', 'Dragon', 'Demon',
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Menagerie', 'Elemental']
 
 
 def df_to_dict(df, df_new):
@@ -82,7 +84,10 @@ def get_all_matches_per_champ(data):
 
 
 def get_all_mmr(data):
-    index_split = np.where([int(d['mmr']) < 1000 for d in data])[0][0]
+    if min([int(d['mmr']) for d in data]) > 2000:
+        index_split = 0
+    else:
+        index_split = np.where([int(d['mmr']) < 2000 for d in data])[0][0]
     old_data = data[:index_split]
     new_data = data[index_split:]
     old_mmr = [int(match_data['mmr'].replace('"', ''))
@@ -237,13 +242,13 @@ def get_board_type_and_stats(board):
            'amalgam': ['Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc'],
            'holymackerel': ['Murloc', 'Divine Shield'],
            'gentle megasaur': ['Murloc'],
+           'water droplet': ['Elemental'],
+           'mecharoo': ['Mech']
            }
     if board == []:
         return 'None', None, []
     noms = np.array([n.lower().strip() for n in df_tags['Name'].values])
     noms_ = np.array([n.replace(' ', '') for n in noms])
-    possible_tags = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                     'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Menagerie']
     board_tags = []
     bugged = []
     all_minions = {}
@@ -292,8 +297,11 @@ def get_board_type_and_stats(board):
         type_ = 'Divine Shield'
     else:
         races = {k: v for k, v in c_tags.items() if k in [
-            'Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc']}
-        best_race, n = c_tags.most_common()[0]
+            'Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc', 'Elemental']}
+        try:
+            best_race, n = c_tags.most_common()[0]
+        except:
+            print(board)
         if len(races) >= 3:
             if n >= 3:
                 type_ = best_race
@@ -379,7 +387,7 @@ def get_cbt_winrate_per_champ(log_data):
 
 def get_cbt_winrate_per_comp(log_data):
     all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie']
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie', 'Elemental']
     results = {champ: [] for champ in all_comps}
     for comp in all_comps:
         all_comp_data = [d for a in [list(k.values()) for k in [
@@ -455,7 +463,7 @@ def reorder_logs(log_data, df_data):
 
 def get_board_popularity(log_data):
     all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie']
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie', 'Elemental']
     temp = defaultdict(list)
     for match in log_data:
         for turn, board in match['boards'].items():
