@@ -15,6 +15,8 @@ to_del = ['Brann Bronzebeard']
 df_tags = pd.read_csv(os.path.join(__file__.replace(
     '\compute_stats.py', ''), 'types.csv'))
 df_tags = df_tags.fillna('')
+possible_tags = ['Beast', 'Pirate', 'Dragon', 'Demon',
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Menagerie', 'Elemental']
 
 
 def df_to_dict(df, df_new):
@@ -82,9 +84,18 @@ def get_all_matches_per_champ(data):
 
 
 def get_all_mmr(data):
-    mmr = [int(match_data['mmr'].replace('"', ''))
-           for match_data in data if int(match_data['mmr'].replace('"', '')) > 3000]
-    return mmr
+    if min([int(d['mmr']) for d in data]) > 2000:
+        index_split = 0
+    else:
+        index_split = np.where([int(d['mmr']) < 2000 for d in data])[0][0]
+    old_data = data[:index_split]
+    new_data = data[index_split:]
+    old_mmr = [int(match_data['mmr'].replace('"', ''))
+               for match_data in old_data if int(match_data['mmr'].replace('"', '')) > 3000]
+    if len(new_data) > 0:
+        new_mmr = [int(match_data['mmr'].replace('"', ''))
+                   for match_data in new_data]
+    return old_mmr, new_mmr
 
 
 def get_all_position(data):
@@ -100,8 +111,9 @@ def get_mmr_gain(data):
         if index_match == 0:
             results[result_match['hero']].append(0)
         else:
-            results[result_match['hero']].append(
-                int(result_match['mmr'].replace('"', '')) - int(data[index_match-1]['mmr'].replace('"', '')))
+            mmr = max(int(result_match['mmr'].replace(
+                '"', '')) - int(data[index_match-1]['mmr'].replace('"', '')), -100)
+            results[result_match['hero']].append(mmr)
     return {k.replace('"', ''): (np.mean(v), sum(v), -sum([i for i in v if i < 0]), sum([i for i in v if i > 0])) for k, v in results.items()}
 
 
@@ -190,8 +202,8 @@ def process_log_data(log_data):
 
 
 def get_comp_type(boards):
-    coeffs = {1: 1, 2: 1, 3: 2, 4: 2, 5: 2, 6: 3, 7: 3, 8: 3, 9: 4, 10: 4,
-              11: 4, 12: 5, 13: 5, 14: 5, 15: 5, 16: 6, 17: 6, 18: 6, 19: 6, 20: 7}
+    coeffs = {1: 1, 2: 1, 3: 1, 4: 1, 5: 1, 6: 3, 7: 3, 8: 3, 9: 4, 10: 4,
+              11: 5, 12: 5, 13: 6, 14: 6, 15: 7, 16: 7, 17: 8, 18: 8, 19: 9, 20: 9}
     all_types = np.unique([v['type'] for v in boards.values()])
     results = {t: 0 for t in all_types}
     for nb_turn, board_data in boards.items():
@@ -230,13 +242,13 @@ def get_board_type_and_stats(board):
            'amalgam': ['Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc'],
            'holymackerel': ['Murloc', 'Divine Shield'],
            'gentle megasaur': ['Murloc'],
+           'water droplet': ['Elemental'],
+           'mecharoo': ['Mech']
            }
     if board == []:
         return 'None', None, []
     noms = np.array([n.lower().strip() for n in df_tags['Name'].values])
     noms_ = np.array([n.replace(' ', '') for n in noms])
-    possible_tags = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                     'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Menagerie']
     board_tags = []
     bugged = []
     all_minions = {}
@@ -273,27 +285,33 @@ def get_board_type_and_stats(board):
             if tag in possible_tags:
                 board_tags.append(tag.strip())
     c_tags = Counter(board_tags)
-    if 'pogo-hopper' in all_minions and all_minions['pogo-hopper']['pv'] >= 6:
+    if 'pogo-hopper' in all_minions and (all_minions['pogo-hopper']['pv'] + all_minions['pogo-hopper']['atq']) >= (tot_atq+tot_pv)/5:
         type_ = 'Pogo Hopper'
     elif 'lightfang enforcer' in all_minions:
         type_ = 'Menagerie'
-    elif (('bolvar,  fireblood' in all_minions and 'drakonid enforcer' in all_minions)
-          or ('bolvar,  fireblood' in all_minions and c_tags['Divine Shield'] >= 4)
-          or ('drakonid enforcer' in all_minions and c_tags['Divine Shield'] >= 3)):
-        type_ = 'Divine Shield'
     elif ('baron rivendare' in all_minions and c_tags['Deathrattle'] >= 2) or c_tags['Deathrattle'] >= 4:
         type_ = 'Deathrattle'
+    elif (('bolvar,  fireblood' in all_minions and 'drakonid enforcer' in all_minions)
+          or ('bolvar,  fireblood' in all_minions)
+          or ('drakonid enforcer' in all_minions and (('Dragon' in c_tags and c_tags['Dragon'] <= 3) or 'Dragon' not in c_tags))):
+        type_ = 'Divine Shield'
     else:
         races = {k: v for k, v in c_tags.items() if k in [
-            'Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc']}
-        best_race, n = c_tags.most_common()[0]
+            'Beast', 'Pirate', 'Dragon', 'Demon', 'Mech', 'Murloc', 'Elemental']}
+        try:
+            best_race, n = c_tags.most_common()[0]
+        except:
+            print(board)
         if len(races) >= 3:
             if n >= 3:
                 type_ = best_race
             else:
                 type_ = 'Menagerie'
         else:
-            type_ = best_race
+            if len(c_tags.most_common()) > 1 and c_tags.most_common()[1][1] == n:
+                type_ = 'Menagerie'
+            else:
+                type_ = best_race
 
     return type_, {'atq': tot_atq, 'pv': tot_pv}, bugged
 
@@ -369,7 +387,7 @@ def get_cbt_winrate_per_champ(log_data):
 
 def get_cbt_winrate_per_comp(log_data):
     all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie']
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie', 'Elemental']
     results = {champ: [] for champ in all_comps}
     for comp in all_comps:
         all_comp_data = [d for a in [list(k.values()) for k in [
@@ -438,21 +456,23 @@ def reorder_logs(log_data, df_data):
         log_match = [l for l in log_data if l['hero']
                      == hero and int(l['mmr']) == mmr]
         if len(log_match) > 0:
+            log_match[0]['date'] = match['date']
             results.append(log_match[0])
     return results
 
+
 def get_board_popularity(log_data):
     all_comps = ['Beast', 'Pirate', 'Dragon', 'Demon',
-                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie']
+                 'Mech', 'Murloc', 'Divine Shield', 'Deathrattle', 'Pogo Hopper', 'Menagerie', 'Elemental']
     temp = defaultdict(list)
     for match in log_data:
-        for turn,board in match['boards'].items():
+        for turn, board in match['boards'].items():
             if board['type'] != 'None':
                 temp[turn].append(board['type'])
-    res = {k : Counter(v) for k,v in temp.items()}
+    res = {k: Counter(v) for k, v in temp.items()}
     to_return = {}
     for comp_type in all_comps:
-        comp_res= []
+        comp_res = []
         for turn, turn_res in res.items():
             if comp_type in turn_res:
                 comp_res.append(turn_res[comp_type]/sum(turn_res.values()))
@@ -461,9 +481,27 @@ def get_board_popularity(log_data):
         to_return[comp_type] = comp_res
     return to_return
 
-    
+
+def build_df_board_stats(log_data):
+    to_df = {}
+    for index, data in enumerate(log_data):
+        nb_turns = len(data['combat_results'])
+        to_df[index] = [data['hero'], data['comp_type'], *
+                        [sum(v.values()) for k, v in data['board_stats'].items() if v], *[np.nan for i in range(20-nb_turns)]]
+    df = pd.DataFrame.from_dict(to_df, orient='index', columns=[
+                                'hero', 'comp', *[i for i in range(1, 21)]])
+    df.fillna(-1)
+    return df
 
 
+def build_df_games(log_data):
+    to_df = {}
+    for index, data in enumerate(log_data):
+        to_df[index] = [data['date'], data['hero'],
+                        data['comp_type'], data['pos']]
+    df = pd.DataFrame.from_dict(to_df, orient='index', columns=[
+                                'date', 'hero', 'comp', 'pos'])
+    return df
 
 
 def get_all_stats():
@@ -474,7 +512,7 @@ def get_all_stats():
     data = df_to_dict(df_champ, df_champ_new)
     all_matches_per_champ = get_all_matches_per_champ(data)
     all_heros = list(all_matches_per_champ.keys())
-    mmr_evo = get_all_mmr(data)
+    old_mmr, new_mmr = get_all_mmr(data)
     champs_pos = get_all_position(data)
     mean_position = round_(
         np.mean([v for x in champs_pos.values() for v in x]), 2)  # global mean pos
@@ -482,7 +520,6 @@ def get_all_stats():
         v) for k, v in champs_pos.items() if len(v) != 0}  # champ mean positions
     nb_played = {k.replace('"', ''): len(v)
                  for k, v in champs_pos.items()}  # nb times played(csv)
-    mmr_data = get_mmr_gain(data)  # (mean, net, lost, won)
     champ_mmr_data = get_mmr_gain(data)  # mean and total mmr per champ
     n_games = len(data)  # total games(csv)
     champ_played_percentage = {k: v/n_games for k,
@@ -496,7 +533,9 @@ def get_all_stats():
     board_pop = get_board_popularity(log_data)
     cbt_winrate_champs = get_cbt_winrate_per_champ(log_data)
     cbt_winrate_comps = get_cbt_winrate_per_comp(log_data)
+    df_board_stats = build_df_board_stats(log_data)
     log_data = reorder_logs(log_data, data)
+    df_games = build_df_games(log_data)
     comp_types = get_comp_types_stats(log_data)
     comp_types_per_champ = get_comp_types_per_champ(log_data)
     results = defaultdict(list)
@@ -557,83 +596,9 @@ def get_all_stats():
                                                                              'mmr total gagné', 'mmr total perdu', 'nombre de pick', *[f'% top {i}' for i in range(1, 9)], 'Victoires', 'Top 1'])
 
     return (df_champ, df_top_n_champ, df_all_champ, df_types,
-            all_matches_per_champ, mmr_evo, mean_position,
-            cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ, comp_types, battle_luck, board_pop)
-
-
-# def get_all_stats_():
-#     choices_and_pick = extract_choices_and_pick(LOG_PATH)
-#     picks_stats = get_pick_stats(choices_and_pick)
-#     df = pd.read_csv(CSV_PATH, sep=';').values
-#     data = df_to_dict(df)
-#     all_matches_per_champ = get_all_matches_per_champ(data)
-#     mmr_evo = get_all_mmr(data)
-#     champs_pos = get_all_position(data)
-#     mean_position = round_(
-#         np.mean([v for x in champs_pos.values() for v in x]), 2)  # global mean pos
-#     champ_mean_pos = {k.replace('"', ''): np.mean(
-#         v) for k, v in champs_pos.items() if len(v) != 0}  # champ mean positions
-#     nb_played = {k.replace('"', ''): len(v)
-#                  for k, v in champs_pos.items()}  # nb times played(csv)
-#     champ_mmr_data = get_mmr_gain(data)  # mean and total mmr per champ
-#     n_games = len(data)  # total games(csv)
-#     champ_played_percentage = {k: v/n_games for k,
-#                                v in nb_played.items()}  # played percentage
-#     # pickrate new ( but not csv)
-#     pickrate_new = {k: nb_played[k]/v[0]
-#                     for k, v in picks_stats.items() if k in nb_played}
-#     nb_proposed_new = {k: v[0] for k, v in picks_stats.items()}
-#     percent_proposed_new = {k: v[0]/n_games for k, v in picks_stats.items()}
-#     top_n = get_top_n_rate(champs_pos)
-#     all_heros = pickrate_new.keys()
-#     results = defaultdict(list)
-#     for hero in all_heros:
-#         if hero not in champ_mean_pos:
-#             champ_mean_pos[hero] = np.nan
-#         if hero not in champ_mmr_data:
-#             champ_mmr_data[hero] = [np.nan, np.nan, np.nan, np.nan]
-#         if hero not in nb_played:
-#             nb_played[hero] = np.nan
-#         if hero not in champ_played_percentage:
-#             champ_played_percentage[hero] = np.nan
-#         if hero not in nb_proposed_new:
-#             nb_proposed_new[hero] = np.nan
-#         if hero not in pickrate_new:
-#             pickrate_new[hero] = np.nan
-#         if hero not in percent_proposed_new:
-#             percent_proposed_new[hero] = 0
-#         results[hero] = [hero, round_(champ_mean_pos[hero], 2),
-#                          round_(champ_mmr_data[hero][0], 0),
-#                          champ_mmr_data[hero][3], champ_mmr_data[hero][2],
-#                          champ_mmr_data[hero][1], nb_played[hero],
-#                          nb_proposed_new[hero], round_(
-#                              pickrate_new[hero]*100, 1),
-#                          round_(champ_played_percentage[hero]*100, 1),
-#                          round_(percent_proposed_new[hero]*100, 1)
-#                          ]
-#     df = pd.DataFrame.from_dict(results, orient='index', columns=['nom', 'position moyenne',
-#                                                                   'mmr moyen par partie',
-#                                                                   'mmr total gagné',
-#                                                                   'mmr total perdu',
-#                                                                   'gain mmr',
-#                                                                   'nombre de pick',
-#                                                                   'nombre de fois proposé',
-#                                                                   'pickrate',
-#                                                                   '% de parties',
-#                                                                   '% proposé'
-#                                                                   ])
-
-#     top_n_temp = defaultdict(list)
-#     for hero, data_hero in top_n.items():
-#         hero = hero.replace('"', '')
-#         for place in range(1, 9):
-#             top_n_temp[hero].append(round_(data_hero[place]*100, 1))
-#         top_n_temp[hero].append(sum(top_n_temp[hero][:4]))
-#         top_n_temp[hero].insert(0, hero.replace('"', ''))
-#     df_top_n = pd.DataFrame.from_dict(top_n_temp, orient='index', columns=[
-#                                       'nom']+[f'% top {i}' for i in range(1, 9)]+['winrate'])
-#     df_all = pd.concat([df, df_top_n.drop('nom', axis=1)], axis=1)
-#     return df, df_top_n, df_all, all_matches_per_champ, mmr_evo, mean_position
+            all_matches_per_champ, old_mmr, new_mmr, mean_position,
+            cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
+            comp_types, df_board_stats, board_pop, df_games, log_data)
 
 
 def round_(nb, n=2):

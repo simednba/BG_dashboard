@@ -39,8 +39,8 @@ server = app.server
 app.config.suppress_callback_exceptions = True
 
 (df_stats_champs, df_top_champs, df_all_champ, df_types,  all_matches_champs,
- mmr, mean_position, cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
- comp_types, battle_luck, board_pop) = get_all_stats()
+ old_mmr, new_mmr, mean_position, cbt_winrate_champs, cbt_winrate_comps, comp_types_per_champ,
+ comp_types, df_board_stats, board_pop, df_games, log_data) = get_all_stats()
 df_all_champ.loc['global', df_stats_champs.describe(
 ).columns] = df_stats_champs.describe().loc['mean'].round(2)
 df_all_champ.loc['global', 'nom'] = 'moyenne'
@@ -51,6 +51,7 @@ app.layout = html.Div(children=[dcc.Tabs(id='main', value='main_v', children=[
     dcc.Tab(label='Toute les Données', value='all'),
     dcc.Tab(label='Par Perso', value='solo'),
     dcc.Tab(label='Par Compo', value='comps'),
+    dcc.Tab(label='Par Partie', value='game'),
     dcc.Tab(label='Comparaison', value='compar'),
 ]),
     html.Div(id='content'),
@@ -58,8 +59,8 @@ app.layout = html.Div(children=[dcc.Tabs(id='main', value='main_v', children=[
 
 ])
 
-graphs_generals = {'MMR': 'mmr',
-                   'MMR avec moyenne': 'mean_mmr',
+graphs_generals = {'old MMR': 'old_mmr',
+                   'new MMR': 'new_mmr',
                    'Compositions': 'compos',
                    'Board popularity': 'board_pop',
                    'Placements(pie)': 'p',
@@ -155,6 +156,14 @@ def render_content(tab):
         return html.Div([dcc.Dropdown(id='choix_type',
                                       options=[{'label': k, 'value': k} for k in list(df_types['nom'].values)]),
                          html.Div(id='graph_type')])
+    elif tab == 'game':
+        return html.Div(children=[
+            dbc.Row([
+                dbc.Col([html.H2('Hero'), dcc.Dropdown(id='choix_hero',
+                                                       options=[{'label': v, 'value': v} for v in np.unique(df_games['hero'])]),
+                         html.H2('Compo'), dcc.Dropdown(id='choix_comp',
+                                                        options=[{'label': v, 'value': v} for v in np.unique(df_games['comp'])])], width=3),
+                dbc.Col([html.Div(id='content_table_game'), html.Div(id='content_game')], width=9)])])
 
     elif tab == 'compar':
         return html.Div(children=[
@@ -171,6 +180,66 @@ def render_content(tab):
                              {'label': 'Graphes', 'value': 'graph'}
                          ], value='table')]),
                 dbc.Col(html.Div(id='content_table_c'), width=9)])])
+
+
+@app.callback(Output('content_table_game', 'children'),
+              [Input('choix_hero', 'value'),
+               Input('choix_comp', 'value')
+               ])
+def render_game_table(hero, comp):
+    if not hero and not comp:
+        df = df_games
+    elif hero and not comp:
+        df = df_games[df_games['hero'] == hero]
+    elif comp and not hero:
+        df = df_games[df_games['comp'] == comp]
+    else:
+        df = df_games[np.logical_and(
+            df_games['comp'] == comp, df_games['hero'] == hero)]
+    return html.Div(dcc.Dropdown(id='choix_game', options=list(reversed([{'label': '/'.join(a.values), 'value': a.name} for _, a in df.iterrows()]))))
+
+@app.callback(Output('content_game', 'children'),
+              [Input('choix_game', 'value')])
+def render_game(game_id):
+    if not game_id:
+        return None
+    data = log_data[game_id]
+    luck = data['luck']
+    df_temp = {}
+    for turn, turn_data in data['boards'].items():
+        nb_minions = len(turn_data['minions'])
+        df_temp[turn] = [turn] + turn_data['minions']+[np.nan] * \
+            (7-nb_minions)+[turn_data['type'], turn_data['result']]
+    df = pd.DataFrame.from_dict(df_temp, orient='index', columns=['turn',
+                                                                  *[f'Minion {i}' for i in range(1, 8)], 'type', 'resultat'])
+    board_stats = [sum(v.values())
+                   for k, v in data['board_stats'].items() if v]
+    nb_turns = len(data['combat_results'])
+    df_board_stats_champ = df_board_stats[df_board_stats['hero']
+                                          == data['hero']]
+    board_stats_champ = [np.nanmean(df_board_stats_champ[i])
+                         for i in range(1, nb_turns+1)]
+    df_board_stats_comp = df_board_stats[df_board_stats['comp']
+                                         == data['comp_type']]
+    board_stats_comp = [np.nanmean(df_board_stats_comp[i])
+                        for i in range(1, nb_turns+1)]
+    df_board_stats_all = df_board_stats[np.logical_and(
+        df_board_stats['hero'] == data['hero'], df_board_stats['comp'] == data['comp_type'])]
+    board_stats_all = [np.nanmean(df_board_stats_all[i])
+                       for i in range(1, nb_turns+1)]
+    names = ['this game', 'mean for char',
+             'mean for comp type', 'mean for char & comp_type']
+    lines = [board_stats, board_stats_champ, board_stats_comp, board_stats_all]
+    return html.Div(children=[html.H2('battle luck : ' + str(luck)),
+                              df2table_simple(df),
+                              dcc.Graph(
+                    id='board_stats_graph',
+                    figure=go.Figure(data=[go.Scatter(name=names[i], y=lines[i], x=list(range(1, 21))) for i in range(len(names))],
+                                     layout=go.Layout(title=go.layout.Title(
+                                         text=' <b>board stats</b>'))
+
+                                     )
+                    )])
 
 
 @app.callback(Output('g1', 'children'),
@@ -446,17 +515,21 @@ def render_comparison(filtre_col, sort_by, champs, compar_type):
 def render_general_page(t_1, n_max, n_min):
     if t_1 == None:
         pass
-    elif t_1 == 'MMR':
+    elif t_1 == 'old MMR':
         return dcc.Graph(
             id='example-graph',
-            figure=go.Figure(data=[go.Scatter(y=mmr, x=list(range(len(mmr))))], layout={'margin': {'t': 0, 'l': 0}}))
-    elif t_1 == 'MMR avec moyenne':
-        return dcc.Graph(
-            id='example-graph',
-            figure=go.Figure(data=[go.Scatter(name='MMR', y=mmr, x=list(range(len(mmr)))),
+            figure=go.Figure(data=[go.Scatter(name='MMR', y=old_mmr, x=list(range(len(old_mmr)))),
                                    go.Scatter(name='moyenne sur 10 parties', y=rolling_mean(
-                                       mmr, 10), x=list(range(len(mmr)))),
-                                   go.Scatter(name='moyenne sur 25 parties', y=rolling_mean(mmr, 25), x=list(range(len(mmr))))],
+                                       old_mmr, 10), x=list(range(len(old_mmr)))),
+                                   go.Scatter(name='moyenne sur 25 parties', y=rolling_mean(old_mmr, 25), x=list(range(len(old_mmr))))],
+                             layout={'margin': {'t': 0, 'l': 0}}))
+    elif t_1 == 'new MMR':
+        return dcc.Graph(
+            id='example-graph',
+            figure=go.Figure(data=[go.Scatter(name='MMR', y=new_mmr, x=list(range(len(new_mmr)))),
+                                   go.Scatter(name='moyenne sur 10 parties', y=rolling_mean(
+                                       new_mmr, 10), x=list(range(len(new_mmr)))),
+                                   go.Scatter(name='moyenne sur 25 parties', y=rolling_mean(new_mmr, 25), x=list(range(len(new_mmr))))],
                              layout={'margin': {'t': 0, 'l': 0}}))
     elif t_1 == 'Compositions':
         return render_graph(x=df_types['nom'].values,
@@ -620,6 +693,19 @@ def df2table_simple(dataframe):
             html.Tr([
                 html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
             ]) for i in reversed(range(len(dataframe)))
+        ])
+    ], className='table')
+
+
+def df2table_games(dataframe):
+    return html.Table([
+        html.Thead(
+            html.Tr([html.Th(col) for col in dataframe.columns])
+        ),
+        html.Tbody([
+            html.Tr([html.A(id='test', href='test', children='test'),
+                     *[html.Td(dataframe.iloc[i][col]) for col in dataframe.columns]
+                     ]) for i in reversed(range(len(dataframe)))
         ])
     ], className='table')
 
